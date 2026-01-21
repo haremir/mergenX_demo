@@ -2,6 +2,7 @@ import chromadb
 import json
 import traceback
 import os
+import uuid
 from pathlib import Path
 from src.model.embeddings import MergenEmbedder
 from src.model.llm_wrapper import MergenLLM
@@ -64,18 +65,32 @@ class TravelPlanner:
     def _initialize_db_from_hotels_json(self):
         """
         hotels.json dosyasından ChromaDB'yi on-the-fly oluştur
-        Sunucu ortamında veri yüklemesi için kullanılır
+        UUID-based IDs, koleksiyon reset ve batch control ile duplicate ID hatasını önler
         """
         try:
             import streamlit as st
-            
+            has_streamlit = True
+        except ImportError:
+            has_streamlit = False
+        
+        try:
             # Dosya var mı kontrol et
             if not os.path.exists(self.hotels_json_path):
                 raise FileNotFoundError(f"hotels.json bulunamadı: {self.hotels_json_path}")
             
             print(f"[INFO] hotels.json okuluyor: {self.hotels_json_path}")
             
-            with st.spinner("🏨 Vektör veritabanı oluşturuluyor... Bu ilk sefer biraz zaman alabilir."):
+            if has_streamlit:
+                spinner_context = __import__('streamlit').spinner("🏨 Vektör veritabanı oluşturuluyor... Bu ilk sefer biraz zaman alabilir.")
+            else:
+                # Non-Streamlit ortamda dummy context
+                from contextlib import contextmanager
+                @contextmanager
+                def dummy_spinner(msg):
+                    yield
+                spinner_context = dummy_spinner("")
+            
+            with spinner_context:
                 # hotels.json'ı oku
                 with open(self.hotels_json_path, 'r', encoding='utf-8') as f:
                     hotels_data = json.load(f)
@@ -90,38 +105,49 @@ class TravelPlanner:
                 
                 print(f"[INFO] {len(hotels_list)} otel bulundu")
                 
-                # Koleksiyon oluştur
+                # STEP 1: Eski koleksiyonu sil
+                try:
+                    self.client.delete_collection(name="hotels")
+                    print("[INFO] Eski koleksiyon silindi")
+                except Exception as e:
+                    print(f"[INFO] Koleksiyon sıfırlama (ilk kez normal): {e}")
+                
+                # Yeni koleksiyon oluştur
                 self.collection = self.client.get_or_create_collection(
                     name="hotels",
                     metadata={"hnsw:space": "cosine"}
                 )
+                print("[INFO] Yeni koleksiyon oluşturuldu")
                 
                 # Embedder'ı oluştur
                 embedder = MergenEmbedder()
                 
-                # Otelleri vektör DB'ye ekle
+                # STEP 2 & 3: UUID-based IDs ile otelleri vektör DB'ye ekle ve batch control
                 batch_size = 50
+                total_added = 0
+                
                 for i in range(0, len(hotels_list), batch_size):
                     batch = hotels_list[i:i+batch_size]
                     
                     ids = []
                     documents = []
                     metadatas = []
-                    embeddings = []
                     
                     for hotel in batch:
-                        hotel_id = hotel.get("id", f"hotel_{i}")
-                        hotel_name = hotel.get("name", "Unknown")
+                        # Tamamen eşsiz UUID oluştur
+                        unique_id = str(uuid.uuid4())
+                        
+                        hotel_name = hotel.get("name", hotel.get("hotel_name", "Unknown"))
                         hotel_desc = hotel.get("description", "")
                         
                         # Metadata hazırla
                         amenities_list = hotel.get("amenities", [])
                         amenities_str = json.dumps(amenities_list) if amenities_list else "[]"
                         
-                        ids.append(hotel_id)
+                        ids.append(unique_id)
                         documents.append(hotel_desc)
                         metadatas.append({
-                            "id": hotel_id,
+                            "uuid": unique_id,
                             "name": hotel_name,
                             "city": hotel.get("city", "").lower(),
                             "concept": hotel.get("concept", ""),
@@ -129,91 +155,62 @@ class TravelPlanner:
                             "amenities": amenities_str
                         })
                     
-                    # Embeddings oluştur
-                    descriptions = [d for d in documents]
-                    emb_vectors = embedder.create_embeddings(descriptions)
-                    embeddings = [emb.tolist() for emb in emb_vectors]
+                    # STEP 3: Batch control - mevcut ID'leri kontrol et
+                    existing_ids = set()
+                    try:
+                        existing_data = self.collection.get()
+                        if existing_data and 'ids' in existing_data:
+                            existing_ids = set(existing_data['ids'])
+                    except Exception as e:
+                        print(f"[DEBUG] Mevcut ID kontrolü: {e}")
                     
-                    # DB'ye ekle
-                    self.collection.add(
-                        ids=ids,
-                        documents=documents,
-                        metadatas=metadatas,
-                        embeddings=embeddings
-                    )
+                    # Yalnızca yeni ID'leri ekle
+                    new_ids = []
+                    new_documents = []
+                    new_metadatas = []
                     
-                    print(f"[INFO] {min(i+batch_size, len(hotels_list))}/{len(hotels_list)} otel eklendi")
+                    for id_, doc, meta in zip(ids, documents, metadatas):
+                        if id_ not in existing_ids:
+                            new_ids.append(id_)
+                            new_documents.append(doc)
+                            new_metadatas.append(meta)
+                    
+                    if new_ids:
+                        # Embeddings oluştur
+                        emb_vectors = embedder.create_embeddings(new_documents)
+                        embeddings = [emb.tolist() for emb in emb_vectors]
+                        
+                        # DB'ye ekle
+                        self.collection.add(
+                            ids=new_ids,
+                            documents=new_documents,
+                            metadatas=new_metadatas,
+                            embeddings=embeddings
+                        )
+                        total_added += len(new_ids)
+                        print(f"[INFO] Batch: {len(new_ids)} yeni otel eklendi (Toplam: {total_added}/{len(hotels_list)})")
+                    else:
+                        print(f"[INFO] Batch: Eklenecek yeni otel yok")
                 
                 final_count = self.collection.count()
                 print(f"[SUCCESS] Vektör veritabanı başarıyla oluşturuldu: {final_count} otel")
-                st.success(f"✅ Vektör veritabanı hazırlandı! {final_count} otel yüklendi.")
-        
-        except ImportError:
-            # Streamlit içinde değilsek spinner gösteremeyiz
-            print(f"[INFO] hotels.json okuluyor: {self.hotels_json_path}")
-            with open(self.hotels_json_path, 'r', encoding='utf-8') as f:
-                hotels_data = json.load(f)
-            
-            if isinstance(hotels_data, dict) and "hotels" in hotels_data:
-                hotels_list = hotels_data["hotels"]
-            elif isinstance(hotels_data, list):
-                hotels_list = hotels_data
-            else:
-                raise ValueError(f"Beklenmeyen hotels.json yapısı: {type(hotels_data)}")
-            
-            print(f"[INFO] {len(hotels_list)} otel bulundu")
-            
-            self.collection = self.client.get_or_create_collection(
-                name="hotels",
-                metadata={"hnsw:space": "cosine"}
-            )
-            
-            embedder = MergenEmbedder()
-            
-            batch_size = 50
-            for i in range(0, len(hotels_list), batch_size):
-                batch = hotels_list[i:i+batch_size]
                 
-                ids = []
-                documents = []
-                metadatas = []
-                embeddings = []
-                
-                for hotel in batch:
-                    hotel_id = hotel.get("id", f"hotel_{i}")
-                    hotel_name = hotel.get("name", "Unknown")
-                    hotel_desc = hotel.get("description", "")
-                    
-                    amenities_list = hotel.get("amenities", [])
-                    amenities_str = json.dumps(amenities_list) if amenities_list else "[]"
-                    
-                    ids.append(hotel_id)
-                    documents.append(hotel_desc)
-                    metadatas.append({
-                        "id": hotel_id,
-                        "name": hotel_name,
-                        "city": hotel.get("city", "").lower(),
-                        "concept": hotel.get("concept", ""),
-                        "price": str(hotel.get("price", 0)),
-                        "amenities": amenities_str
-                    })
-                
-                emb_vectors = embedder.create_embeddings([d for d in documents])
-                embeddings = [emb.tolist() for emb in emb_vectors]
-                
-                self.collection.add(
-                    ids=ids,
-                    documents=documents,
-                    metadatas=metadatas,
-                    embeddings=embeddings
-                )
-                
-                print(f"[INFO] {min(i+batch_size, len(hotels_list))}/{len(hotels_list)} otel eklendi")
-            
-            final_count = self.collection.count()
-            print(f"[SUCCESS] Vektör veritabanı başarıyla oluşturuldu: {final_count} otel")
+                if has_streamlit:
+                    __import__('streamlit').success(f"✅ Vektör veritabanı hazırlandı! {final_count} otel yüklendi.")
         
         except Exception as e:
+            print(f"[ERROR] ChromaDB başlatma hatası: {str(e)}")
+            # STEP 4: Try-Catch - Hata oluşursa koleksiyonu sil ve yeniden oluştur
+            try:
+                print("[WARNING] Hata nedeniyle koleksiyon sıfırlanıyor...")
+                self.client.delete_collection(name="hotels")
+                self.collection = self.client.get_or_create_collection(
+                    name="hotels",
+                    metadata={"hnsw:space": "cosine"}
+                )
+                print("[WARNING] Koleksiyon sıfırlandı ve yeniden oluşturuldu")
+            except Exception as reset_error:
+                print(f"[ERROR] Koleksiyon sıfırlama başarısız: {reset_error}")
             raise Exception(f"ChromaDB başlatma hatası: {str(e)}")
 
     def _load_flight_data(self):
