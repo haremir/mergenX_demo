@@ -302,6 +302,19 @@ class TravelPlanner:
             
             print(f"[SUCCESS] {len(hotels)} otel bulundu")
             
+            # DEBUG: Metadata kontrolü
+            print(f"[DEBUG METADATA CHECK] İlk otel metadata'sı:")
+            try:
+                import streamlit as st
+                st.write("**[DEBUG] Otel Metadata Bilgisi:**")
+                for i, hotel in enumerate(hotels[:3]):  # İlk 3 oteli debug et
+                    st.write(f"**Hotel {i+1}: {hotel.get('name', 'N/A')}**")
+                    st.json(hotel)
+            except ImportError:
+                # Streamlit'te değilsek sadece print et
+                for i, hotel in enumerate(hotels[:3]):
+                    print(f"[DEBUG] Hotel {i+1}: {hotel}")
+            
             # ============================================================
             # ADIM 3: PAKETLEME VE FİLTRELEME
             # ============================================================
