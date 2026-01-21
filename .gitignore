@@ -41,13 +41,14 @@ env/
 .env.local
 .env.*.local
 
-# ChromaDB ve Vektör Veritabanı (Büyük dosyalar)
+# ChromaDB ve Vektör Veritabanı (Sunucuda oluşturulacak)
 data/chroma_db/
-data/hotels.json
-data/*.json
 *.db
 *.sqlite
 *.sqlite3
+
+# Data dosyaları - GIT'te takip et (hotels.json, flights.json, transfers.json lazım)
+# Bu dosyaları ignore etme - sunucuda veri yüklemesi için gerekli
 
 # Streamlit
 .streamlit/

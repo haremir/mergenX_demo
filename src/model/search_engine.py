@@ -22,16 +22,30 @@ class TravelPlanner:
         self.error_message = None
         
         try:
-            self.client = chromadb.PersistentClient(path=db_path)
-            self.collection = self.client.get_collection(name="hotels")
+            # Dosya yollarını güvenli hale getir (OS-bağımsız)
+            self.db_path = os.path.join("data", "chroma_db")
+            self.hotels_json_path = os.path.join("data", "hotels.json")
             
-            # Collection'ın kaç hotel içerdiğini kontrol et
-            collection_count = self.collection.count()
-            print(f"[INFO] ChromaDB: {collection_count} otel yüklü")
+            print(f"[INFO] DB Path: {self.db_path}")
+            print(f"[INFO] Hotels JSON Path: {self.hotels_json_path}")
             
-            if collection_count == 0:
-                self.error_message = "ChromaDB boş! Lütfen veri yüklemek için şu komutu çalıştırın: python -m src.data_generation.vector_store"
-                print(f"[WARNING] {self.error_message}")
+            # ChromaDB client'ı oluştur
+            self.client = chromadb.PersistentClient(path=self.db_path)
+            
+            # Koleksiyon var mı kontrol et
+            try:
+                self.collection = self.client.get_collection(name="hotels")
+                collection_count = self.collection.count()
+                print(f"[INFO] ChromaDB: {collection_count} otel yüklü")
+                
+                if collection_count == 0:
+                    print(f"[WARNING] ChromaDB koleksiyonu boş! Veri yükleniyor...")
+                    self._initialize_db_from_hotels_json()
+            
+            except Exception as collection_error:
+                print(f"[WARNING] ChromaDB koleksiyonu bulunamadı: {collection_error}")
+                print(f"[INFO] Vektör veritabanı oluşturuluyor...")
+                self._initialize_db_from_hotels_json()
             
             self.embedder = MergenEmbedder()
             self.llm = MergenLLM()
@@ -40,41 +54,204 @@ class TravelPlanner:
             self._load_flight_data()
             self._load_transfer_data()
             
+            print(f"[SUCCESS] Seyahat Planlayıcı başarıyla başlatıldı")
+            
         except Exception as e:
             self.error_message = f"Seyahat Planlayıcı Başlatma Hatası: {str(e)}"
             print(f"[ERROR] {self.error_message}")
             traceback.print_exc()
 
-    def _load_flight_data(self):
-        """flights.json dosyasını yükle"""
+    def _initialize_db_from_hotels_json(self):
+        """
+        hotels.json dosyasından ChromaDB'yi on-the-fly oluştur
+        Sunucu ortamında veri yüklemesi için kullanılır
+        """
         try:
-            flights_path = Path("./data/flights.json")
-            if flights_path.exists():
+            import streamlit as st
+            
+            # Dosya var mı kontrol et
+            if not os.path.exists(self.hotels_json_path):
+                raise FileNotFoundError(f"hotels.json bulunamadı: {self.hotels_json_path}")
+            
+            print(f"[INFO] hotels.json okuluyor: {self.hotels_json_path}")
+            
+            with st.spinner("🏨 Vektör veritabanı oluşturuluyor... Bu ilk sefer biraz zaman alabilir."):
+                # hotels.json'ı oku
+                with open(self.hotels_json_path, 'r', encoding='utf-8') as f:
+                    hotels_data = json.load(f)
+                
+                # Veri yapısını kontrol et
+                if isinstance(hotels_data, dict) and "hotels" in hotels_data:
+                    hotels_list = hotels_data["hotels"]
+                elif isinstance(hotels_data, list):
+                    hotels_list = hotels_data
+                else:
+                    raise ValueError(f"Beklenmeyen hotels.json yapısı: {type(hotels_data)}")
+                
+                print(f"[INFO] {len(hotels_list)} otel bulundu")
+                
+                # Koleksiyon oluştur
+                self.collection = self.client.get_or_create_collection(
+                    name="hotels",
+                    metadata={"hnsw:space": "cosine"}
+                )
+                
+                # Embedder'ı oluştur
+                embedder = MergenEmbedder()
+                
+                # Otelleri vektör DB'ye ekle
+                batch_size = 50
+                for i in range(0, len(hotels_list), batch_size):
+                    batch = hotels_list[i:i+batch_size]
+                    
+                    ids = []
+                    documents = []
+                    metadatas = []
+                    embeddings = []
+                    
+                    for hotel in batch:
+                        hotel_id = hotel.get("id", f"hotel_{i}")
+                        hotel_name = hotel.get("name", "Unknown")
+                        hotel_desc = hotel.get("description", "")
+                        
+                        # Metadata hazırla
+                        amenities_list = hotel.get("amenities", [])
+                        amenities_str = json.dumps(amenities_list) if amenities_list else "[]"
+                        
+                        ids.append(hotel_id)
+                        documents.append(hotel_desc)
+                        metadatas.append({
+                            "id": hotel_id,
+                            "name": hotel_name,
+                            "city": hotel.get("city", "").lower(),
+                            "concept": hotel.get("concept", ""),
+                            "price": str(hotel.get("price", 0)),
+                            "amenities": amenities_str
+                        })
+                    
+                    # Embeddings oluştur
+                    descriptions = [d for d in documents]
+                    emb_vectors = embedder.create_embeddings(descriptions)
+                    embeddings = [emb.tolist() for emb in emb_vectors]
+                    
+                    # DB'ye ekle
+                    self.collection.add(
+                        ids=ids,
+                        documents=documents,
+                        metadatas=metadatas,
+                        embeddings=embeddings
+                    )
+                    
+                    print(f"[INFO] {min(i+batch_size, len(hotels_list))}/{len(hotels_list)} otel eklendi")
+                
+                final_count = self.collection.count()
+                print(f"[SUCCESS] Vektör veritabanı başarıyla oluşturuldu: {final_count} otel")
+                st.success(f"✅ Vektör veritabanı hazırlandı! {final_count} otel yüklendi.")
+        
+        except ImportError:
+            # Streamlit içinde değilsek spinner gösteremeyiz
+            print(f"[INFO] hotels.json okuluyor: {self.hotels_json_path}")
+            with open(self.hotels_json_path, 'r', encoding='utf-8') as f:
+                hotels_data = json.load(f)
+            
+            if isinstance(hotels_data, dict) and "hotels" in hotels_data:
+                hotels_list = hotels_data["hotels"]
+            elif isinstance(hotels_data, list):
+                hotels_list = hotels_data
+            else:
+                raise ValueError(f"Beklenmeyen hotels.json yapısı: {type(hotels_data)}")
+            
+            print(f"[INFO] {len(hotels_list)} otel bulundu")
+            
+            self.collection = self.client.get_or_create_collection(
+                name="hotels",
+                metadata={"hnsw:space": "cosine"}
+            )
+            
+            embedder = MergenEmbedder()
+            
+            batch_size = 50
+            for i in range(0, len(hotels_list), batch_size):
+                batch = hotels_list[i:i+batch_size]
+                
+                ids = []
+                documents = []
+                metadatas = []
+                embeddings = []
+                
+                for hotel in batch:
+                    hotel_id = hotel.get("id", f"hotel_{i}")
+                    hotel_name = hotel.get("name", "Unknown")
+                    hotel_desc = hotel.get("description", "")
+                    
+                    amenities_list = hotel.get("amenities", [])
+                    amenities_str = json.dumps(amenities_list) if amenities_list else "[]"
+                    
+                    ids.append(hotel_id)
+                    documents.append(hotel_desc)
+                    metadatas.append({
+                        "id": hotel_id,
+                        "name": hotel_name,
+                        "city": hotel.get("city", "").lower(),
+                        "concept": hotel.get("concept", ""),
+                        "price": str(hotel.get("price", 0)),
+                        "amenities": amenities_str
+                    })
+                
+                emb_vectors = embedder.create_embeddings([d for d in documents])
+                embeddings = [emb.tolist() for emb in emb_vectors]
+                
+                self.collection.add(
+                    ids=ids,
+                    documents=documents,
+                    metadatas=metadatas,
+                    embeddings=embeddings
+                )
+                
+                print(f"[INFO] {min(i+batch_size, len(hotels_list))}/{len(hotels_list)} otel eklendi")
+            
+            final_count = self.collection.count()
+            print(f"[SUCCESS] Vektör veritabanı başarıyla oluşturuldu: {final_count} otel")
+        
+        except Exception as e:
+            raise Exception(f"ChromaDB başlatma hatası: {str(e)}")
+
+    def _load_flight_data(self):
+        """flights.json dosyasını yükle (OS-bağımsız dosya yolları)"""
+        try:
+            flights_path = os.path.join("data", "flights.json")
+            if os.path.exists(flights_path):
                 with open(flights_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    self.flights = data.get("flights", [])
+                    # flights.json bir obje, "flights" anahtarı altında liste var
+                    if isinstance(data, dict) and "flights" in data:
+                        self.flights = data.get("flights", [])
+                    else:
+                        self.flights = data if isinstance(data, list) else []
                     print(f"[INFO] {len(self.flights)} uçuş verisi yüklendi")
             else:
                 self.flights = []
-                print(f"[WARNING] flights.json bulunamadı")
+                print(f"[WARNING] flights.json bulunamadı: {flights_path}")
         except Exception as e:
             self.flights = []
             print(f"[ERROR] Uçuş verisi yükleme hatası: {e}")
 
     def _load_transfer_data(self):
-        """transfers.json dosyasını yükle"""
+        """transfers.json dosyasını yükle (OS-bağımsız dosya yolları)"""
         try:
-            transfers_path = Path("./data/transfers.json")
-            if transfers_path.exists():
+            transfers_path = os.path.join("data", "transfers.json")
+            if os.path.exists(transfers_path):
                 with open(transfers_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    self.transfers = data.get("transfer_routes", [])
-                    print(f"[INFO] {len(self.transfers)} transfer rotası yüklendi")
+                    # transfers.json bir obje, "transfer_routes" anahtarı altında liste var
+                    self.transfers = data  # Tüm veriyi tut, sonra filter_transfers'ta extract et
+                    routes_count = len(data.get("transfer_routes", [])) if isinstance(data, dict) else 0
+                    print(f"[INFO] {routes_count} transfer rotası yüklendi")
             else:
-                self.transfers = []
-                print(f"[WARNING] transfers.json bulunamadı")
+                self.transfers = {"transfer_routes": []}
+                print(f"[WARNING] transfers.json bulunamadı: {transfers_path}")
         except Exception as e:
-            self.transfers = []
+            self.transfers = {"transfer_routes": []}
             print(f"[ERROR] Transfer verisi yükleme hatası: {e}")
 
     def plan_travel(self, user_query: str, top_k: int = 3) -> tuple:

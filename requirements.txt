@@ -1,0 +1,11 @@
+# MergenX - Streamlit Cloud Bağımlılıkları
+# UV ile kurulum: uv pip install -r requirements.txt
+# Or with pip: pip install -r requirements.txt
+
+chromadb>=1.4.0
+groq>=1.0.0
+pandas>=2.3.3
+pydantic>=2.12.5
+python-dotenv>=1.2.1
+sentence-transformers>=5.2.0
+streamlit>=1.52.2

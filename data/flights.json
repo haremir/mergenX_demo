@@ -1,0 +1,1395 @@
+{
+  "metadata": {
+    "generated_for": "MergenX Transfer Operations",
+    "total_hotels": 600,
+    "total_flights": 60,
+    "generation_date": "2026-01-19",
+    "season": "Summer 2026"
+  },
+  "hotel_distribution": {
+    "izmir": {
+      "count": 300,
+      "zones": [
+        "Çeşme",
+        "Alaçatı",
+        "Seferihisar",
+        "Foça"
+      ]
+    },
+    "aydin": {
+      "count": 100,
+      "zones": [
+        "Kuşadası",
+        "Didim"
+      ]
+    },
+    "mugla": {
+      "count": 75,
+      "zones": [
+        "Bodrum"
+      ]
+    },
+    "balikesir": {
+      "count": 75,
+      "zones": [
+        "Akçay",
+        "Altınoluk"
+      ]
+    },
+    "antalya": {
+      "count": 50,
+      "zones": [
+        "Belek",
+        "Lara",
+        "Konyaaltı"
+      ]
+    }
+  },
+  "flights": [
+    {
+      "flight_id": "TK2104-20260615",
+      "carrier": "TK",
+      "flight_no": "2104",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-15T08:30:00",
+        "arrival": "2026-06-15T09:45:00"
+      },
+      "pricing": {
+        "amount": 2450.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "TK2106-20260615",
+      "carrier": "TK",
+      "flight_no": "2106",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-15T11:00:00",
+        "arrival": "2026-06-15T12:15:00"
+      },
+      "pricing": {
+        "amount": 2550.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Seferihisar",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "TK2108-20260615",
+      "carrier": "TK",
+      "flight_no": "2108",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-15T14:30:00",
+        "arrival": "2026-06-15T15:45:00"
+      },
+      "pricing": {
+        "amount": 2600.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "TK2110-20260615",
+      "carrier": "TK",
+      "flight_no": "2110",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-15T17:00:00",
+        "arrival": "2026-06-15T18:15:00"
+      },
+      "pricing": {
+        "amount": 2700.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "TK2112-20260615",
+      "carrier": "TK",
+      "flight_no": "2112",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-15T19:30:00",
+        "arrival": "2026-06-15T20:45:00"
+      },
+      "pricing": {
+        "amount": 2800.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "PC2850-20260616",
+      "carrier": "PC",
+      "flight_no": "2850",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-16T07:15:00",
+        "arrival": "2026-06-16T08:25:00"
+      },
+      "pricing": {
+        "amount": 1950.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "PC2852-20260616",
+      "carrier": "PC",
+      "flight_no": "2852",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-16T10:45:00",
+        "arrival": "2026-06-16T11:55:00"
+      },
+      "pricing": {
+        "amount": 2050.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Seferihisar",
+        "Çeşme"
+      ]
+    },
+    {
+      "flight_id": "PC2854-20260616",
+      "carrier": "PC",
+      "flight_no": "2854",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-16T14:20:00",
+        "arrival": "2026-06-16T15:30:00"
+      },
+      "pricing": {
+        "amount": 2100.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Foça",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "PC2856-20260616",
+      "carrier": "PC",
+      "flight_no": "2856",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-16T18:00:00",
+        "arrival": "2026-06-16T19:10:00"
+      },
+      "pricing": {
+        "amount": 2200.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "TK2114-20260617",
+      "carrier": "TK",
+      "flight_no": "2114",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-17T06:00:00",
+        "arrival": "2026-06-17T07:15:00"
+      },
+      "pricing": {
+        "amount": 2350.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "TK2116-20260617",
+      "carrier": "TK",
+      "flight_no": "2116",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-17T09:30:00",
+        "arrival": "2026-06-17T10:45:00"
+      },
+      "pricing": {
+        "amount": 2450.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Seferihisar",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "TK2118-20260617",
+      "carrier": "TK",
+      "flight_no": "2118",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-17T13:00:00",
+        "arrival": "2026-06-17T14:15:00"
+      },
+      "pricing": {
+        "amount": 2550.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "TK2120-20260617",
+      "carrier": "TK",
+      "flight_no": "2120",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-17T16:30:00",
+        "arrival": "2026-06-17T17:45:00"
+      },
+      "pricing": {
+        "amount": 2650.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "TK2122-20260617",
+      "carrier": "TK",
+      "flight_no": "2122",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-17T20:00:00",
+        "arrival": "2026-06-17T21:15:00"
+      },
+      "pricing": {
+        "amount": 2750.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "PC2858-20260618",
+      "carrier": "PC",
+      "flight_no": "2858",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-18T08:30:00",
+        "arrival": "2026-06-18T09:40:00"
+      },
+      "pricing": {
+        "amount": 1980.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "PC2860-20260618",
+      "carrier": "PC",
+      "flight_no": "2860",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-18T12:15:00",
+        "arrival": "2026-06-18T13:25:00"
+      },
+      "pricing": {
+        "amount": 2080.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Seferihisar",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "PC2862-20260618",
+      "carrier": "PC",
+      "flight_no": "2862",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-18T15:45:00",
+        "arrival": "2026-06-18T16:55:00"
+      },
+      "pricing": {
+        "amount": 2150.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "AJT642-20260619",
+      "carrier": "AJT",
+      "flight_no": "642",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "AYT",
+        "destination": "ADB",
+        "departure": "2026-06-19T10:00:00",
+        "arrival": "2026-06-19T11:05:00"
+      },
+      "pricing": {
+        "amount": 1850.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "TK2124-20260619",
+      "carrier": "TK",
+      "flight_no": "2124",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-19T07:45:00",
+        "arrival": "2026-06-19T09:00:00"
+      },
+      "pricing": {
+        "amount": 2400.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "TK2126-20260619",
+      "carrier": "TK",
+      "flight_no": "2126",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-19T12:15:00",
+        "arrival": "2026-06-19T13:30:00"
+      },
+      "pricing": {
+        "amount": 2500.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "TK2128-20260619",
+      "carrier": "TK",
+      "flight_no": "2128",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-19T15:45:00",
+        "arrival": "2026-06-19T17:00:00"
+      },
+      "pricing": {
+        "amount": 2600.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Seferihisar",
+        "Çeşme"
+      ]
+    },
+    {
+      "flight_id": "TK2130-20260620",
+      "carrier": "TK",
+      "flight_no": "2130",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "ESB",
+        "destination": "ADB",
+        "departure": "2026-06-20T08:00:00",
+        "arrival": "2026-06-20T09:05:00"
+      },
+      "pricing": {
+        "amount": 1950.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "TK2132-20260620",
+      "carrier": "TK",
+      "flight_no": "2132",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "ESB",
+        "destination": "ADB",
+        "departure": "2026-06-20T13:30:00",
+        "arrival": "2026-06-20T14:35:00"
+      },
+      "pricing": {
+        "amount": 2050.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Foça",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "PC2864-20260620",
+      "carrier": "PC",
+      "flight_no": "2864",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-20T11:00:00",
+        "arrival": "2026-06-20T12:10:00"
+      },
+      "pricing": {
+        "amount": 2020.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "PC2866-20260620",
+      "carrier": "PC",
+      "flight_no": "2866",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-20T16:30:00",
+        "arrival": "2026-06-20T17:40:00"
+      },
+      "pricing": {
+        "amount": 2180.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "TK2134-20260621",
+      "carrier": "TK",
+      "flight_no": "2134",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-21T09:15:00",
+        "arrival": "2026-06-21T10:30:00"
+      },
+      "pricing": {
+        "amount": 2480.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "TK2136-20260621",
+      "carrier": "TK",
+      "flight_no": "2136",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-21T14:00:00",
+        "arrival": "2026-06-21T15:15:00"
+      },
+      "pricing": {
+        "amount": 2580.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "PC2868-20260621",
+      "carrier": "PC",
+      "flight_no": "2868",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "ADB",
+        "departure": "2026-06-21T17:45:00",
+        "arrival": "2026-06-21T18:55:00"
+      },
+      "pricing": {
+        "amount": 2220.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Alaçatı"
+      ]
+    },
+    {
+      "flight_id": "TK2138-20260622",
+      "carrier": "TK",
+      "flight_no": "2138",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-22T06:30:00",
+        "arrival": "2026-06-22T07:45:00"
+      },
+      "pricing": {
+        "amount": 2380.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Çeşme",
+        "Seferihisar"
+      ]
+    },
+    {
+      "flight_id": "TK2140-20260622",
+      "carrier": "TK",
+      "flight_no": "2140",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-22T18:30:00",
+        "arrival": "2026-06-22T19:45:00"
+      },
+      "pricing": {
+        "amount": 2720.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Foça"
+      ]
+    },
+    {
+      "flight_id": "TK2524-20260615",
+      "carrier": "TK",
+      "flight_no": "2524",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "BJV",
+        "departure": "2026-06-15T09:00:00",
+        "arrival": "2026-06-15T10:20:00"
+      },
+      "pricing": {
+        "amount": 2680.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Kuşadası",
+        "Didim"
+      ]
+    },
+    {
+      "flight_id": "TK2526-20260615",
+      "carrier": "TK",
+      "flight_no": "2526",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "BJV",
+        "departure": "2026-06-15T14:15:00",
+        "arrival": "2026-06-15T15:35:00"
+      },
+      "pricing": {
+        "amount": 2780.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Bodrum"
+      ]
+    },
+    {
+      "flight_id": "TK2528-20260616",
+      "carrier": "TK",
+      "flight_no": "2528",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "BJV",
+        "departure": "2026-06-16T08:30:00",
+        "arrival": "2026-06-16T09:50:00"
+      },
+      "pricing": {
+        "amount": 2700.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Kuşadası",
+        "Didim"
+      ]
+    },
+    {
+      "flight_id": "PC2920-20260616",
+      "carrier": "PC",
+      "flight_no": "2920",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "BJV",
+        "departure": "2026-06-16T12:00:00",
+        "arrival": "2026-06-16T13:15:00"
+      },
+      "pricing": {
+        "amount": 2280.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Bodrum"
+      ]
+    },
+    {
+      "flight_id": "TK2530-20260617",
+      "carrier": "TK",
+      "flight_no": "2530",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "BJV",
+        "departure": "2026-06-17T10:45:00",
+        "arrival": "2026-06-17T12:05:00"
+      },
+      "pricing": {
+        "amount": 2720.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Kuşadası",
+        "Didim"
+      ]
+    },
+    {
+      "flight_id": "PC2922-20260617",
+      "carrier": "PC",
+      "flight_no": "2922",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "BJV",
+        "departure": "2026-06-17T15:30:00",
+        "arrival": "2026-06-17T16:45:00"
+      },
+      "pricing": {
+        "amount": 2350.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Bodrum"
+      ]
+    },
+    {
+      "flight_id": "TK2532-20260618",
+      "carrier": "TK",
+      "flight_no": "2532",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "ESB",
+        "destination": "BJV",
+        "departure": "2026-06-18T09:15:00",
+        "arrival": "2026-06-18T10:30:00"
+      },
+      "pricing": {
+        "amount": 2150.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Kuşadası",
+        "Didim"
+      ]
+    },
+    {
+      "flight_id": "PC2924-20260618",
+      "carrier": "PC",
+      "flight_no": "2924",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "BJV",
+        "departure": "2026-06-18T13:45:00",
+        "arrival": "2026-06-18T15:00:00"
+      },
+      "pricing": {
+        "amount": 2320.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Bodrum"
+      ]
+    },
+    {
+      "flight_id": "TK2534-20260619",
+      "carrier": "TK",
+      "flight_no": "2534",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "BJV",
+        "departure": "2026-06-19T11:30:00",
+        "arrival": "2026-06-19T12:50:00"
+      },
+      "pricing": {
+        "amount": 2750.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Kuşadası",
+        "Didim"
+      ]
+    },
+    {
+      "flight_id": "PC2926-20260619",
+      "carrier": "PC",
+      "flight_no": "2926",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "BJV",
+        "departure": "2026-06-19T16:15:00",
+        "arrival": "2026-06-19T17:30:00"
+      },
+      "pricing": {
+        "amount": 2380.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Bodrum"
+      ]
+    },
+    {
+      "flight_id": "TK2536-20260620",
+      "carrier": "TK",
+      "flight_no": "2536",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "BJV",
+        "departure": "2026-06-20T07:45:00",
+        "arrival": "2026-06-20T09:05:00"
+      },
+      "pricing": {
+        "amount": 2650.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Kuşadası",
+        "Didim"
+      ]
+    },
+    {
+      "flight_id": "TK1740-20260615",
+      "carrier": "TK",
+      "flight_no": "1740",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T08:00:00",
+        "arrival": "2026-06-15T09:30:00"
+      },
+      "pricing": {
+        "amount": 2850.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Belek",
+        "Lara"
+      ]
+    },
+    {
+      "flight_id": "TK1742-20260615",
+      "carrier": "TK",
+      "flight_no": "1742",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T12:30:00",
+        "arrival": "2026-06-15T14:00:00"
+      },
+      "pricing": {
+        "amount": 2950.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Konyaaltı",
+        "Lara"
+      ]
+    },
+    {
+      "flight_id": "PC2740-20260616",
+      "carrier": "PC",
+      "flight_no": "2740",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-16T09:45:00",
+        "arrival": "2026-06-16T11:10:00"
+      },
+      "pricing": {
+        "amount": 2380.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Belek",
+        "Konyaaltı"
+      ]
+    },
+    {
+      "flight_id": "TK1744-20260616",
+      "carrier": "TK",
+      "flight_no": "1744",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-16T15:15:00",
+        "arrival": "2026-06-16T16:45:00"
+      },
+      "pricing": {
+        "amount": 3050.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Lara",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "PC2742-20260617",
+      "carrier": "PC",
+      "flight_no": "2742",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-17T11:00:00",
+        "arrival": "2026-06-17T12:25:00"
+      },
+      "pricing": {
+        "amount": 2420.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Konyaaltı",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "TK1746-20260617",
+      "carrier": "TK",
+      "flight_no": "1746",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "ESB",
+        "destination": "AYT",
+        "departure": "2026-06-17T14:30:00",
+        "arrival": "2026-06-17T15:50:00"
+      },
+      "pricing": {
+        "amount": 2250.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Lara",
+        "Konyaaltı"
+      ]
+    },
+    {
+      "flight_id": "PC2744-20260618",
+      "carrier": "PC",
+      "flight_no": "2744",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-18T08:15:00",
+        "arrival": "2026-06-18T09:40:00"
+      },
+      "pricing": {
+        "amount": 2350.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Belek",
+        "Lara"
+      ]
+    },
+    {
+      "flight_id": "TK1748-20260618",
+      "carrier": "TK",
+      "flight_no": "1748",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-18T17:00:00",
+        "arrival": "2026-06-18T18:30:00"
+      },
+      "pricing": {
+        "amount": 3150.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Konyaaltı",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "TK1750-20260619",
+      "carrier": "TK",
+      "flight_no": "1750",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-19T10:15:00",
+        "arrival": "2026-06-19T11:45:00"
+      },
+      "pricing": {
+        "amount": 2900.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Lara",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "PC2746-20260619",
+      "carrier": "PC",
+      "flight_no": "2746",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-19T13:45:00",
+        "arrival": "2026-06-19T15:10:00"
+      },
+      "pricing": {
+        "amount": 2480.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Konyaaltı",
+        "Lara"
+      ]
+    },
+    {
+      "flight_id": "TK1850-20260615",
+      "carrier": "TK",
+      "flight_no": "1850",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "EDR",
+        "departure": "2026-06-15T10:30:00",
+        "arrival": "2026-06-15T11:50:00"
+      },
+      "pricing": {
+        "amount": 2580.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Akçay",
+        "Altınoluk"
+      ]
+    },
+    {
+      "flight_id": "PC2980-20260616",
+      "carrier": "PC",
+      "flight_no": "2980",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "EDR",
+        "departure": "2026-06-16T08:00:00",
+        "arrival": "2026-06-16T09:15:00"
+      },
+      "pricing": {
+        "amount": 2180.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Akçay",
+        "Altınoluk"
+      ]
+    },
+    {
+      "flight_id": "TK1852-20260617",
+      "carrier": "TK",
+      "flight_no": "1852",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "EDR",
+        "departure": "2026-06-17T12:00:00",
+        "arrival": "2026-06-17T13:20:00"
+      },
+      "pricing": {
+        "amount": 2620.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Akçay",
+        "Altınoluk"
+      ]
+    },
+    {
+      "flight_id": "PC2982-20260618",
+      "carrier": "PC",
+      "flight_no": "2982",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "EDR",
+        "departure": "2026-06-18T14:30:00",
+        "arrival": "2026-06-18T15:45:00"
+      },
+      "pricing": {
+        "amount": 2220.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Altınoluk",
+        "Akçay"
+      ]
+    },
+    {
+      "flight_id": "TK1854-20260619",
+      "carrier": "TK",
+      "flight_no": "1854",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "ESB",
+        "destination": "EDR",
+        "departure": "2026-06-19T09:30:00",
+        "arrival": "2026-06-19T10:45:00"
+      },
+      "pricing": {
+        "amount": 2080.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Akçay",
+        "Altınoluk"
+      ]
+    },
+    {
+      "flight_id": "PC2984-20260620",
+      "carrier": "PC",
+      "flight_no": "2984",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "EDR",
+        "departure": "2026-06-20T16:00:00",
+        "arrival": "2026-06-20T17:15:00"
+      },
+      "pricing": {
+        "amount": 2250.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Altınoluk",
+        "Akçay"
+      ]
+    }
+  ],
+  "route_statistics": {
+    "total_flights": 60,
+    "by_destination": {
+      "ADB": 30,
+      "BJV": 10,
+      "AYT": 10,
+      "EDR": 6,
+      "total_others": 30
+    },
+    "by_carrier": {
+      "TK": 38,
+      "PC": 21,
+      "AJT": 1
+    },
+    "transfer_coverage": {
+      "izmir_zones": [
+        "Çeşme",
+        "Alaçatı",
+        "Seferihisar",
+        "Foça"
+      ],
+      "aydin_zones": [
+        "Kuşadası",
+        "Didim"
+      ],
+      "mugla_zones": [
+        "Bodrum"
+      ],
+      "balikesir_zones": [
+        "Akçay",
+        "Altınoluk"
+      ],
+      "antalya_zones": [
+        "Belek",
+        "Lara",
+        "Konyaaltı"
+      ]
+    }
+  }
+}

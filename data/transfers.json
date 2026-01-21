@@ -1,0 +1,908 @@
+{
+  "operator_info": {
+    "operator_name": "MergenX Lojistik",
+    "operator_id": "MERGEN_LOJ",
+    "total_hotel_inventory": 600,
+    "coverage_areas": [
+      "İzmir",
+      "Aydın",
+      "Muğla",
+      "Balıkesir",
+      "Antalya"
+    ],
+    "last_updated": "2026-01-20"
+  },
+  "transfer_routes": [
+    {
+      "service_code": "TR-IZM-VIP-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "CESME_CENTER",
+        "to_area_name": "Çeşme Merkez",
+        "estimated_duration": 65
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1850.0,
+      "currency": "TRY",
+      "hotel_coverage": 85
+    },
+    {
+      "service_code": "TR-IZM-VIP-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "ALACATI_CENTER",
+        "to_area_name": "Alaçatı Merkez",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 1950.0,
+      "currency": "TRY",
+      "hotel_coverage": 45
+    },
+    {
+      "service_code": "TR-IZM-VIP-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "ILICA_BEACH",
+        "to_area_name": "Ilıca Plajı - Çeşme",
+        "estimated_duration": 72
+      },
+      "vehicle_info": {
+        "category": "SEDAN_VIP",
+        "max_pax": 3,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LUXURY_BRAND",
+          "WATER_PROVIDED"
+        ]
+      },
+      "total_price": 2100.0,
+      "currency": "TRY",
+      "hotel_coverage": 28
+    },
+    {
+      "service_code": "TR-IZM-SHTL-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "CESME_CENTER",
+        "to_area_name": "Çeşme Merkez",
+        "estimated_duration": 75
+      },
+      "vehicle_info": {
+        "category": "SHUTTLE_BUS",
+        "max_pax": 14,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 450.0,
+      "currency": "TRY",
+      "hotel_coverage": 85,
+      "schedule": "Every 2 hours: 08:00-22:00"
+    },
+    {
+      "service_code": "TR-IZM-SHTL-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "ALACATI_CENTER",
+        "to_area_name": "Alaçatı Merkez",
+        "estimated_duration": 80
+      },
+      "vehicle_info": {
+        "category": "SHUTTLE_BUS",
+        "max_pax": 14,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE",
+          "USB_CHARGING"
+        ]
+      },
+      "total_price": 475.0,
+      "currency": "TRY",
+      "hotel_coverage": 45,
+      "schedule": "Every 3 hours: 09:00-21:00"
+    },
+    {
+      "service_code": "TR-IZM-ECO-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "CESME_CENTER",
+        "to_area_name": "Çeşme Merkez",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1250.0,
+      "currency": "TRY",
+      "hotel_coverage": 85
+    },
+    {
+      "service_code": "TR-IZM-ECO-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "ALACATI_CENTER",
+        "to_area_name": "Alaçatı Merkez",
+        "estimated_duration": 75
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1350.0,
+      "currency": "TRY",
+      "hotel_coverage": 45
+    },
+    {
+      "service_code": "TR-IZM-VIP-04",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "SEFERIHISAR_CENTER",
+        "to_area_name": "Seferihisar Merkez",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS"
+        ]
+      },
+      "total_price": 1450.0,
+      "currency": "TRY",
+      "hotel_coverage": 32
+    },
+    {
+      "service_code": "TR-IZM-ECO-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "SEFERIHISAR_CENTER",
+        "to_area_name": "Seferihisar Merkez",
+        "estimated_duration": 50
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 950.0,
+      "currency": "TRY",
+      "hotel_coverage": 32
+    },
+    {
+      "service_code": "TR-IZM-VIP-05",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "FOCA_CENTER",
+        "to_area_name": "Foça Merkez",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1650.0,
+      "currency": "TRY",
+      "hotel_coverage": 25
+    },
+    {
+      "service_code": "TR-IZM-ECO-04",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "FOCA_CENTER",
+        "to_area_name": "Foça Merkez",
+        "estimated_duration": 65
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1150.0,
+      "currency": "TRY",
+      "hotel_coverage": 25
+    },
+    {
+      "service_code": "TR-IZM-SHTL-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "URLA_VINEYARD",
+        "to_area_name": "Urla Bağ Bölgesi",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 850.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-IZM-VIP-06",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "GUMULDUR",
+        "to_area_name": "Gümüldür",
+        "estimated_duration": 55
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 1550.0,
+      "currency": "TRY",
+      "hotel_coverage": 22
+    },
+    {
+      "service_code": "TR-AYD-VIP-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "KUSADASI_CENTER",
+        "to_area_name": "Kuşadası Merkez",
+        "estimated_duration": 75
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "WATER_PROVIDED"
+        ]
+      },
+      "total_price": 1750.0,
+      "currency": "TRY",
+      "hotel_coverage": 58
+    },
+    {
+      "service_code": "TR-AYD-ECO-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "KUSADASI_CENTER",
+        "to_area_name": "Kuşadası Merkez",
+        "estimated_duration": 80
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1200.0,
+      "currency": "TRY",
+      "hotel_coverage": 58
+    },
+    {
+      "service_code": "TR-AYD-SHTL-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "KUSADASI_CENTER",
+        "to_area_name": "Kuşadası Merkez",
+        "estimated_duration": 85
+      },
+      "vehicle_info": {
+        "category": "SHUTTLE_BUS",
+        "max_pax": 14,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE",
+          "USB_CHARGING"
+        ]
+      },
+      "total_price": 425.0,
+      "currency": "TRY",
+      "hotel_coverage": 58,
+      "schedule": "Every 2 hours: 08:00-20:00"
+    },
+    {
+      "service_code": "TR-AYD-VIP-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "DIDIM_ALTINKUM",
+        "to_area_name": "Didim Altınkum",
+        "estimated_duration": 95
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS"
+        ]
+      },
+      "total_price": 2050.0,
+      "currency": "TRY",
+      "hotel_coverage": 42
+    },
+    {
+      "service_code": "TR-AYD-ECO-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "DIDIM_ALTINKUM",
+        "to_area_name": "Didim Altınkum",
+        "estimated_duration": 100
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1450.0,
+      "currency": "TRY",
+      "hotel_coverage": 42
+    },
+    {
+      "service_code": "TR-AYD-VIP-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "Bodrum Havalimanı",
+        "to_area_code": "DIDIM_ALTINKUM",
+        "to_area_name": "Didim Altınkum",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1850.0,
+      "currency": "TRY",
+      "hotel_coverage": 42
+    },
+    {
+      "service_code": "TR-AYD-ECO-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "Bodrum Havalimanı",
+        "to_area_code": "DIDIM_ALTINKUM",
+        "to_area_name": "Didim Altınkum",
+        "estimated_duration": 75
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1300.0,
+      "currency": "TRY",
+      "hotel_coverage": 42
+    },
+    {
+      "service_code": "TR-MGL-VIP-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "Bodrum Havalimanı",
+        "to_area_code": "BODRUM_CENTER",
+        "to_area_name": "Bodrum Merkez",
+        "estimated_duration": 35
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 1350.0,
+      "currency": "TRY",
+      "hotel_coverage": 28
+    },
+    {
+      "service_code": "TR-MGL-ECO-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "Bodrum Havalimanı",
+        "to_area_code": "BODRUM_CENTER",
+        "to_area_name": "Bodrum Merkez",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 850.0,
+      "currency": "TRY",
+      "hotel_coverage": 28
+    },
+    {
+      "service_code": "TR-MGL-VIP-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "Bodrum Havalimanı",
+        "to_area_code": "TURGUTREIS",
+        "to_area_name": "Turgutreis",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1450.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-MGL-VIP-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "Bodrum Havalimanı",
+        "to_area_code": "YALIKAVAK",
+        "to_area_name": "Yalıkavak",
+        "estimated_duration": 50
+      },
+      "vehicle_info": {
+        "category": "SEDAN_VIP",
+        "max_pax": 3,
+        "features": [
+          "WIFI",
+          "LUXURY_BRAND",
+          "LEATHER_SEATS",
+          "WATER_PROVIDED"
+        ]
+      },
+      "total_price": 1650.0,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-MGL-ECO-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "Bodrum Havalimanı",
+        "to_area_code": "GUMBET",
+        "to_area_name": "Gümbet",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 900.0,
+      "currency": "TRY",
+      "hotel_coverage": 14
+    },
+    {
+      "service_code": "TR-BLK-VIP-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "EDO",
+        "from_name": "Edremit Korfez Havalimanı",
+        "to_area_code": "AKCAY",
+        "to_area_name": "Akçay",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1250.0,
+      "currency": "TRY",
+      "hotel_coverage": 38
+    },
+    {
+      "service_code": "TR-BLK-ECO-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "EDO",
+        "from_name": "Edremit Korfez Havalimanı",
+        "to_area_code": "AKCAY",
+        "to_area_name": "Akçay",
+        "estimated_duration": 50
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 750.0,
+      "currency": "TRY",
+      "hotel_coverage": 38
+    },
+    {
+      "service_code": "TR-BLK-VIP-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "EDO",
+        "from_name": "Edremit Korfez Havalimanı",
+        "to_area_code": "ALTINOLUK",
+        "to_area_name": "Altınoluk",
+        "estimated_duration": 35
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS"
+        ]
+      },
+      "total_price": 1150.0,
+      "currency": "TRY",
+      "hotel_coverage": 37
+    },
+    {
+      "service_code": "TR-BLK-ECO-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "EDO",
+        "from_name": "Edremit Korfez Havalimanı",
+        "to_area_code": "ALTINOLUK",
+        "to_area_name": "Altınoluk",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 650.0,
+      "currency": "TRY",
+      "hotel_coverage": 37
+    },
+    {
+      "service_code": "TR-ANT-VIP-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "BELEK",
+        "to_area_name": "Belek",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 950.0,
+      "currency": "TRY",
+      "hotel_coverage": 22
+    },
+    {
+      "service_code": "TR-ANT-ECO-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "BELEK",
+        "to_area_name": "Belek",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 550.0,
+      "currency": "TRY",
+      "hotel_coverage": 22
+    },
+    {
+      "service_code": "TR-ANT-VIP-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "LARA",
+        "to_area_name": "Lara",
+        "estimated_duration": 25
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 750.0,
+      "currency": "TRY",
+      "hotel_coverage": 16
+    },
+    {
+      "service_code": "TR-ANT-ECO-02",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "LARA",
+        "to_area_name": "Lara",
+        "estimated_duration": 30
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 450.0,
+      "currency": "TRY",
+      "hotel_coverage": 16
+    },
+    {
+      "service_code": "TR-ANT-VIP-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "KONYAALTI",
+        "to_area_name": "Konyaaltı",
+        "estimated_duration": 30
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS"
+        ]
+      },
+      "total_price": 850.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-ANT-ECO-03",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "KONYAALTI",
+        "to_area_name": "Konyaaltı",
+        "estimated_duration": 35
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 500.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-IZM-SHTL-04",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "FOCA_CENTER",
+        "to_area_name": "Foça Merkez",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "SHUTTLE_BUS",
+        "max_pax": 14,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 400.0,
+      "currency": "TRY",
+      "hotel_coverage": 25,
+      "schedule": "Daily: 10:00, 14:00, 18:00"
+    },
+    {
+      "service_code": "TR-IZM-VIP-07",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "KARABURUN",
+        "to_area_name": "Karaburun",
+        "estimated_duration": 90
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 2250.0,
+      "currency": "TRY",
+      "hotel_coverage": 35
+    },
+    {
+      "service_code": "TR-IZM-ECO-05",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "Adnan Menderes Havalimanı",
+        "to_area_code": "KARABURUN",
+        "to_area_name": "Karaburun",
+        "estimated_duration": 95
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1550.0,
+      "currency": "TRY",
+      "hotel_coverage": 35
+    },
+    {
+      "service_code": "TR-ANT-VIP-04",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "SIDE",
+        "to_area_name": "Side",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 1200.0,
+      "currency": "TRY",
+      "hotel_coverage": 28
+    }
+  ]
+}
