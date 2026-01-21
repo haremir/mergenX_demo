@@ -552,12 +552,15 @@ class TravelPlanner:
                     except:
                         amenities_list = []
                     
-                    # Fiyat güvenli fetching
+                    # Price sync with new float-based metadata
                     price_value = all_results['metadatas'][0][i].get('price', 0)
-                    try:
-                        price = float(price_value) if price_value is not None else 0
-                    except (ValueError, TypeError):
-                        price = 0
+                    if isinstance(price_value, (int, float)):
+                        price = float(price_value)
+                    else:
+                        try:
+                            price = float(price_value) if price_value else 0
+                        except (ValueError, TypeError):
+                            price = 0
                     
                     matched_hotels.append({
                         "id": all_results['ids'][0][i],
@@ -592,12 +595,15 @@ class TravelPlanner:
                             except:
                                 amenities_list = []
                             
-                            # Fiyat güvenli fetching
+                            # Price sync with new float-based metadata
                             price_value = metadata.get('price', 0)
-                            try:
-                                price = float(price_value) if price_value is not None else 0
-                            except (ValueError, TypeError):
-                                price = 0
+                            if isinstance(price_value, (int, float)):
+                                price = float(price_value)
+                            else:
+                                try:
+                                    price = float(price_value) if price_value else 0
+                                except (ValueError, TypeError):
+                                    price = 0
                             
                             matched_hotels.append({
                                 "id": all_hotels['ids'][i],
@@ -637,12 +643,15 @@ class TravelPlanner:
                             except:
                                 amenities_list = []
                             
-                            # Fiyat güvenli fetching
+                            # Price sync with new float-based metadata
                             price_value = metadata.get('price', 0)
-                            try:
-                                price = float(price_value) if price_value is not None else 0
-                            except (ValueError, TypeError):
-                                price = 0
+                            if isinstance(price_value, (int, float)):
+                                price = float(price_value)
+                            else:
+                                try:
+                                    price = float(price_value) if price_value else 0
+                                except (ValueError, TypeError):
+                                    price = 0
                             
                             matched_hotels.append({
                                 "id": all_hotels['ids'][i],
