@@ -18,13 +18,13 @@ class TravelPlanner:
     6. Akıllı Özet: LLM'e paketi göndererek kişiselleştirilmiş özet oluştur
     """
     
-    def __init__(self, db_path: str = "./data/chroma_db"):
+    def __init__(self, db_path: str = "./data/chroma_db_v2"):
         self.db_path = db_path
         self.error_message = None
         
         try:
             # Dosya yollarını güvenli hale getir (OS-bağımsız)
-            self.db_path = os.path.join("data", "chroma_db")
+            self.db_path = os.path.join("data", "chroma_db_v2")
             self.hotels_json_path = os.path.join("data", "hotels.json")
             
             print(f"[INFO] DB Path: {self.db_path}")
@@ -589,20 +589,22 @@ class TravelPlanner:
                             except:
                                 amenities_list = []
                             
-                            # SYNC: Price fetching with type safety
-                            price_value = metadata.get('price', 0)
+                            # SYNC: Price fetching with type safety + force metadata extraction
+                            price_value = metadata.get('price', 0) or metadata.get('price_value', 0) or metadata.get('price_per_night', 0)
                             price = float(price_value) if price_value is not None else 0.0
+                            hotel_name = metadata.get('name', '') or metadata.get('hotel_name', '') or 'Unknown'
+                            hotel_city = metadata.get('city', '') or metadata.get('city_name', '') or ''
                             
                             matched_hotels.append({
                                 "id": all_hotels['ids'][i],
-                                "name": metadata.get('name', 'Unknown'),
-                                "city": metadata.get('city', ''),
+                                "name": hotel_name,
+                                "city": hotel_city,
                                 "concept": metadata.get('concept', ''),
                                 "price": price,
                                 "description": all_hotels['documents'][i],
                                 "amenities": amenities_list
                             })
-                            print(f"[FALLBACK] Added: {metadata['name']} in {metadata['city']}")
+                            print(f"[FALLBACK] Added: {hotel_name} in {hotel_city}")
                             
                             if len(matched_hotels) >= 5:
                                 break
@@ -631,20 +633,22 @@ class TravelPlanner:
                             except:
                                 amenities_list = []
                             
-                            # SYNC: Price fetching with type safety
-                            price_value = metadata.get('price', 0)
+                            # SYNC: Price fetching with type safety + force metadata extraction
+                            price_value = metadata.get('price', 0) or metadata.get('price_value', 0) or metadata.get('price_per_night', 0)
                             price = float(price_value) if price_value is not None else 0.0
+                            hotel_name = metadata.get('name', '') or metadata.get('hotel_name', '') or 'Unknown'
+                            hotel_city = metadata.get('city', '') or metadata.get('city_name', '') or ''
                             
                             matched_hotels.append({
                                 "id": all_hotels['ids'][i],
-                                "name": metadata.get('name', 'Unknown'),
-                                "city": metadata.get('city', ''),
+                                "name": hotel_name,
+                                "city": hotel_city,
                                 "concept": metadata.get('concept', ''),
                                 "price": price,
                                 "description": all_hotels['documents'][i],
                                 "amenities": amenities_list
                             })
-                            print(f"[FORCE MATCH] Added: {metadata['name']} in {metadata['city']}")
+                            print(f"[FORCE MATCH] Added: {hotel_name} in {hotel_city}")
                             
                             if len(matched_hotels) >= 5:
                                 break

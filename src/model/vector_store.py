@@ -7,7 +7,7 @@ import time
 from src.model.embeddings import MergenEmbedder
 
 class MergenVectorStore:
-    def __init__(self, db_path: str = "./data/chroma_db"):
+    def __init__(self, db_path: str = "./data/chroma_db_v2"):
         self.db_path = db_path
         self.client = chromadb.PersistentClient(path=self.db_path)
         self.embedder = MergenEmbedder()
