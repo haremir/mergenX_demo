@@ -2,6 +2,8 @@ import chromadb
 import json
 import os
 import uuid
+import shutil
+import time
 from src.model.embeddings import MergenEmbedder
 
 class MergenVectorStore:
@@ -126,11 +128,11 @@ class MergenVectorStore:
 
     def process_and_save(self, json_path: str):
         """
-        ChromaDB metadata kaybı sorununu çözmek için ATOMIK data extraction ve mapping.
-        - Data Extraction: if 'key' in hotel: explicit kontrol
-        - Metadata Mapping: {"name": str(), "city": str(), "price": float(), ...}
-        - Force Refresh: client.delete_collection() başında
-        - Strict Type Casting: str() ve float() explicit
+        NUCLEAR RESET: Physical database wipe + fresh client + manual extraction.
+        - Physical Wipe: shutil.rmtree the entire directory
+        - Fresh Client: Recreate PersistentClient
+        - Manual Extraction: No hotel.get() usage
+        - Wait and Sync: time.sleep(1) for disk write
         """
         try:
             if not os.path.exists(json_path):
@@ -152,15 +154,53 @@ class MergenVectorStore:
             print(f"[STEP 2] Found {len(hotels_list)} hotels. Starting validation...")
 
             # ============================================================
-            # FORCE REFRESH: Delete old broken collection
+            # NUCLEAR RESET: Physical Wipe + Fresh Client
             # ============================================================
-            print("[STEP 3] FORCE REFRESH - Deleting old collection...")
+            print("[STEP 3] NUCLEAR RESET - Physical database wipe...")
+            
+            # Close existing client first
             try:
-                self.client.delete_collection(name="hotels")
-                print("[SUCCESS] Old collection completely deleted")
-            except Exception as e:
-                print(f"[INFO] Delete collection (first run is normal): {e}")
-
+                if hasattr(self, 'collection'):
+                    delattr(self, 'collection')
+                if hasattr(self, 'client'):
+                    del self.client
+                    print("[INFO] Closed existing client")
+            except Exception as close_error:
+                print(f"[INFO] Close client: {close_error}")
+            
+            # Physical Wipe: Remove entire directory with retries
+            db_path_abs = os.path.abspath(self.db_path)
+            if os.path.exists(db_path_abs):
+                print(f"[NUCLEAR] Removing directory: {db_path_abs}")
+                try:
+                    # Try multiple times if files are locked
+                    import time as time_module
+                    for attempt in range(3):
+                        try:
+                            shutil.rmtree(db_path_abs)
+                            print(f"[SUCCESS] Database directory removed (attempt {attempt+1})")
+                            break
+                        except PermissionError as perm_error:
+                            if attempt < 2:
+                                print(f"[RETRY] Permission denied, waiting and retrying... ({attempt+1}/3)")
+                                time_module.sleep(0.5)
+                            else:
+                                raise perm_error
+                except Exception as rmtree_error:
+                    print(f"[ERROR] Failed to remove directory: {rmtree_error}")
+                    raise
+            else:
+                print(f"[INFO] Database directory doesn't exist (first run): {db_path_abs}")
+            
+            # Ensure directory exists (it will be empty now)
+            os.makedirs(db_path_abs, exist_ok=True)
+            print(f"[SUCCESS] Created fresh directory: {db_path_abs}")
+            
+            # Fresh Client: Reinitialize with clean slate
+            print("[STEP 3.5] FRESH CLIENT - Reinitializing ChromaDB client...")
+            self.client = chromadb.PersistentClient(path=self.db_path)
+            print("[SUCCESS] New ChromaDB client created")
+            
             # Create clean collection
             self.collection = self.client.get_or_create_collection(
                 name="hotels",
@@ -169,13 +209,13 @@ class MergenVectorStore:
             print("[SUCCESS] New clean collection created")
 
             # ============================================================
-            # DATA PREPARATION WITH ATOMIC EXTRACTION
+            # DATA PREPARATION WITH MANUAL EXTRACTION
             # ============================================================
             ids = []
             documents = []
             metadatas = []
             
-            print("[STEP 4] Data validation and preparation...")
+            print("[STEP 4] Data validation and preparation (manual extraction)...")
             invalid_count = 0
             
             for idx, hotel in enumerate(hotels_list):
@@ -193,24 +233,67 @@ class MergenVectorStore:
                     documents.append(searchable_text)
                     
                     # ============================================================
-                    # EXPLICIT METADATA MAPPING - ATOMIC
+                    # MANUAL DICTIONARY EXTRACTION - NO hotel.get()
+                    # ============================================================
+                    # Extract and clean each field manually
+                    clean_name = str(validated.get('name', 'Bilinmiyor')).strip()
+                    if not clean_name:
+                        clean_name = 'Bilinmiyor'
+                    
+                    clean_city = str(validated.get('city', 'Bilinmiyor')).strip().lower()
+                    if not clean_city or clean_city == 'unknown city':
+                        clean_city = 'Bilinmiyor'
+                    
+                    clean_district = str(validated.get('district', 'Bilinmiyor')).strip().lower()
+                    if not clean_district or clean_district == 'unknown district':
+                        clean_district = 'Bilinmiyor'
+                    
+                    clean_location = str(validated.get('location', 'Bilinmiyor')).strip()
+                    if not clean_location or clean_location == 'Bilinmiyor, Bilinmiyor':
+                        clean_location = f"{clean_city}, {clean_district}"
+                    
+                    clean_concept = str(validated.get('concept', 'Standard')).strip()
+                    if not clean_concept:
+                        clean_concept = 'Standard'
+                    
+                    clean_price_raw = validated.get('price', 0)
+                    try:
+                        clean_price = float(clean_price_raw) if clean_price_raw else 0.0
+                    except (ValueError, TypeError):
+                        print(f"[WARNING] Price conversion failed for {clean_name}: {clean_price_raw}")
+                        clean_price = 0.0
+                    
+                    clean_description = str(validated.get('description', 'No description')).strip()
+                    if not clean_description:
+                        clean_description = 'No description'
+                    
+                    clean_amenities = str(validated.get('amenities', '[]')).strip()
+                    if not clean_amenities:
+                        clean_amenities = '[]'
+                    
+                    # ============================================================
+                    # STRICT METADATA MAPPING
                     # ============================================================
                     metadata = {
                         "uuid": str(unique_id),
-                        "name": str(validated['name']),
-                        "city": str(validated['city']).lower(),
-                        "district": str(validated['district']).lower(),
-                        "location": str(validated['location']),
-                        "concept": str(validated['concept']),
-                        "price": float(validated['price']),  # EXPLICIT FLOAT
-                        "description": str(validated['description']),
-                        "amenities": str(validated['amenities'])
+                        "name": clean_name,
+                        "city": clean_city,
+                        "district": clean_district,
+                        "location": clean_location,
+                        "concept": clean_concept,
+                        "price": clean_price,  # PURE FLOAT
+                        "description": clean_description,
+                        "amenities": clean_amenities
                     }
                     
                     # Validation: Ensure no empty or None values
                     for key, value in metadata.items():
-                        if value is None or (isinstance(value, str) and value.strip() == ""):
-                            print(f"[ERROR] Metadata validation failed for {hotel.get('hotel_name', 'Unknown')}: {key} is empty!")
+                        if value is None:
+                            print(f"[ERROR] Metadata validation failed for {clean_name}: {key} is None!")
+                            invalid_count += 1
+                            break
+                        if isinstance(value, str) and not value.strip():
+                            print(f"[ERROR] Metadata validation failed for {clean_name}: {key} is empty string!")
                             invalid_count += 1
                             break
                     
@@ -221,6 +304,8 @@ class MergenVectorStore:
                 
                 except Exception as hotel_error:
                     print(f"[ERROR] Failed to validate hotel {idx}: {hotel_error}")
+                    import traceback
+                    traceback.print_exc()
                     invalid_count += 1
                     continue
 
@@ -248,6 +333,13 @@ class MergenVectorStore:
             print(f"[SUCCESS] ChromaDB updated: {final_count} hotels stored")
             
             # ============================================================
+            # WAIT AND SYNC: Ensure disk write completes
+            # ============================================================
+            print("[STEP 7.5] WAIT AND SYNC - Waiting for disk write...")
+            time.sleep(1)
+            print("[SUCCESS] Disk sync complete (1 second wait)")
+            
+            # ============================================================
             # VERIFICATION: Check metadata integrity
             # ============================================================
             print(f"\n[VERIFICATION] Checking metadata integrity...")
@@ -262,7 +354,7 @@ class MergenVectorStore:
                     print(f"  Sample {i+1}: {name} | City: {city} | Price: {price} ({price_type})")
                     
                     # Verify critical fields
-                    if not city or city == 'unknown city':
+                    if not city or city == 'bilinmiyor':
                         print(f"    [WARNING] City is empty or invalid!")
                     if price is None or price == 0:
                         print(f"    [WARNING] Price is 0 or None!")
