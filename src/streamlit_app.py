@@ -148,46 +148,190 @@ if engine:
                     st.rerun()
                 
                 st.divider()
-                st.markdown("### 🏨 Önerilen Oteller")
+                st.markdown("## 🤖 MergenX Seyahat Planı")
                 
-                # Otel ikonları listesi
-                hotel_icons = ["🏩", "🏛️", "🏰", "🏯", "🏟️", "⛩️", "🏢"]
-                
-                # Otel Kartları
+                # Paket Kartları - Revize Görünüm
                 for idx, hotel in enumerate(results):
-                    icon = hotel_icons[idx % len(hotel_icons)]
-                    
                     with st.container(border=True):
-                        # Başlık satırı
-                        col_name, col_price = st.columns([3, 1])
-                        with col_name:
-                            st.markdown(f"### {icon} {hotel['name']}")
-                        with col_price:
-                            st.markdown(f"**{hotel['price']} TL**")
+                        # ============================================================
+                        # ÜSTTE: AKILLI ÖZET (LLM'in Önerisi)
+                        # ============================================================
+                        st.markdown("### ✨ Seyahat Öneriniz")
                         
-                        # Şehir ve Konsept
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.caption(f"📍 {hotel['city']}")
-                        with col2:
-                            st.caption(f"🎯 {hotel['concept']}")
+                        # Package bilgisi kontrol et
+                        package = hotel.get("package", {})
+                        intelligent_summary = hotel.get("reason", "")
                         
-                        st.divider()
-                        
-                        # Neden Bu Otel? Bölümü (LLM tarafından oluşturulan)
-                        st.markdown("**✨ Neden Bu Otel?**")
-                        if 'reason' in hotel:
-                            st.write(hotel['reason'])
+                        if intelligent_summary:
+                            st.info(intelligent_summary)
                         else:
-                            st.write("Kriterlerinizle tam uyumlu bir tesis.")
+                            st.info("Kriterlerinizle tam uyumlu bir paket hazırlandı!")
                         
                         st.divider()
                         
-                        # Otel Açıklaması (Temizlenmiş)
-                        st.markdown("**📄 Otel Hakkında**")
-                        description_text = hotel['description']
-                        cleaned_description = clean_description(description_text, hotel['name'], hotel['city'], hotel['concept'])
-                        st.write(cleaned_description)
+                        # ============================================================
+                        # ORTA: PAKET BİLGİLERİ (3 Kolon)
+                        # ============================================================
+                        st.markdown("### 📦 Paket Detayları")
+                        
+                        col1, col2, col3 = st.columns(3)
+                        
+                        # ---- KOLON 1: OTEL BİLGİSİ ----
+                        with col1:
+                            st.markdown("#### 🏨 Konaklama")
+                            
+                            hotel_info = package.get("hotel", {})
+                            st.markdown(f"**{hotel_info.get('name', hotel['name'])}**")
+                            st.markdown(f"📍 {hotel_info.get('city', hotel['city'])}")
+                            
+                            if hotel_info.get("concept"):
+                                st.markdown(f"🎯 {hotel_info.get('concept')}")
+                            
+                            # Amenities göster
+                            amenities = hotel_info.get("amenities", [])
+                            if amenities:
+                                st.caption("**Tesisler:**")
+                                for amenity in amenities[:3]:
+                                    st.markdown(f"✓ {amenity}")
+                            
+                            # Fiyat
+                            st.divider()
+                            price = hotel_info.get("price", hotel['price'])
+                            st.markdown(f"**₺{price:,.0f}** / gece")
+                        
+                        # ---- KOLON 2: UÇUŞ BİLGİSİ ----
+                        with col2:
+                            st.markdown("#### ✈️ Uçuş")
+                            
+                            flight = package.get("flight")
+                            
+                            if flight:
+                                # Havayolu bilgisi
+                                carrier = flight.get("carrier", "")
+                                carrier_name = ""
+                                
+                                # Tercüme sözlüğü
+                                carrier_names = {
+                                    "TK": "🇹🇷 Türk Hava Yolları",
+                                    "PC": "🟡 Pegasus Airlines",
+                                    "HV": "Havayolu Express",
+                                    "U6": "Bees Airline"
+                                }
+                                carrier_name = carrier_names.get(carrier, carrier)
+                                
+                                st.markdown(f"**{carrier_name}**")
+                                st.markdown(f"Uçuş: {flight.get('flight_no', 'N/A')}")
+                                st.markdown(f"Kabin: {flight.get('cabin', 'Ekonomi')}")
+                                
+                                if flight.get("departure"):
+                                    dep_time = flight.get("departure", "")[:16] if flight.get("departure") else "N/A"
+                                    st.markdown(f"📅 {dep_time}")
+                                
+                                if flight.get("baggage"):
+                                    st.markdown(f"🛄 {flight.get('baggage')}")
+                                
+                                st.divider()
+                                st.markdown(f"**₺{flight.get('price', 0):,.0f}**")
+                            else:
+                                st.markdown("ℹ️ *Uçuş pakete dahil değil*")
+                                st.markdown("---")
+                                st.markdown("**₺0**")
+                        
+                        # ---- KOLON 3: TRANSFER BİLGİSİ ----
+                        with col3:
+                            st.markdown("#### 🚗 Transfer")
+                            
+                            transfer = package.get("transfer")
+                            
+                            if transfer:
+                                # Araç tipi tercümesi
+                                vehicle_code = transfer.get("vehicle_category", "")
+                                vehicle_names = {
+                                    "VAN_VIP": "🚐 Lüks VIP Araç",
+                                    "VAN_STANDARD": "🚌 Standart Minibüs",
+                                    "CAR_ECONOMY": "🚗 Ekonomik Sedan",
+                                    "CAR_COMFORT": "🚙 Konforlu Sedan",
+                                    "CAR_PREMIUM": "🚘 Premium Araç",
+                                    "SUV": "🚙 SUV",
+                                    "LUXURY": "👑 Lüks Araç"
+                                }
+                                vehicle_name = vehicle_names.get(vehicle_code, vehicle_code)
+                                
+                                st.markdown(f"**{vehicle_name}**")
+                                st.markdown(f"Route: {transfer.get('from', 'N/A')} → {transfer.get('to', 'N/A')}")
+                                
+                                duration = transfer.get("duration", 0)
+                                if duration:
+                                    st.markdown(f"⏱️ {duration} dakika")
+                                
+                                # Özellikler
+                                features = transfer.get("vehicle_features", [])
+                                if features:
+                                    st.caption("**Olanaklar:**")
+                                    for feature in features[:2]:
+                                        feature_names = {
+                                            "WIFI": "📶 WiFi",
+                                            "BABY_SEAT_AVAIL": "👶 Bebek Koltuğu",
+                                            "LEATHER_SEATS": "🛋️ Deri Koltuk",
+                                            "CLIMATE_CONTROL": "❄️ İklim Kontrolü",
+                                            "REFRESHMENTS": "🥤 İçecek Servisi"
+                                        }
+                                        feature_name = feature_names.get(feature, feature)
+                                        st.markdown(f"✓ {feature_name}")
+                                
+                                st.divider()
+                                # Fiyatı güvenli şekilde göster
+                                transfer_price = transfer.get('price', 0)
+                                if transfer_price is None:
+                                    transfer_price = 0
+                                st.markdown(f"**₺{float(transfer_price):,.0f}**")
+                            else:
+                                st.markdown("ℹ️ *Transfer pakete dahil değil*")
+                                st.markdown("---")
+                                st.markdown("**₺0**")
+                        
+                        # ============================================================
+                        # ALT: TOPLAM PAKET TUTARI
+                        # ============================================================
+                        st.divider()
+                        
+                        # Fiyat hesaplaması - price_breakdown'dan al
+                        price_breakdown = package.get("price_breakdown", {})
+                        
+                        if price_breakdown:
+                            # Yeni yapıdan oku
+                            hotel_price = price_breakdown.get("hotel", 0)
+                            flight_price = price_breakdown.get("flight", 0)
+                            transfer_price = price_breakdown.get("transfer", 0)
+                            total_price = price_breakdown.get("total", 0)
+                        else:
+                            # Fallback: Eski yapıdan oku (compatibility)
+                            hotel_price = package.get("hotel", {}).get("price", hotel['price'])
+                            flight_price = package.get("flight", {}).get("price", 0) if package.get("flight") else 0
+                            transfer_price = package.get("transfer", {}).get("price", 0) if package.get("transfer") else 0
+                            total_price = hotel_price + flight_price + transfer_price
+                        
+                        # Fiyat dökümü
+                        col_break1, col_break2, col_break3 = st.columns(3)
+                        with col_break1:
+                            st.metric("🏨 Otel", f"₺{hotel_price:,.0f}")
+                        with col_break2:
+                            if flight_price > 0:
+                                st.metric("✈️ Uçuş", f"₺{flight_price:,.0f}")
+                            else:
+                                st.metric("✈️ Uçuş", "—")
+                        with col_break3:
+                            if transfer_price > 0:
+                                st.metric("🚗 Transfer", f"₺{transfer_price:,.0f}")
+                            else:
+                                st.metric("🚗 Transfer", "—")
+                        
+                        # TOPLAM
+                        st.divider()
+                        st.markdown(f"### 💰 **TOPLAM PAKET TUTARI: ₺{total_price:,.0f}**")
+                        
+                        st.divider()
+
                     
 else:
     st.warning("Sistem yüklenemedi. Lütfen terminal loglarını kontrol edin.")
