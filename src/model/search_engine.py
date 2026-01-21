@@ -539,12 +539,19 @@ class TravelPlanner:
                     except:
                         amenities_list = []
                     
+                    # Fiyat güvenli fetching
+                    price_value = all_results['metadatas'][0][i].get('price', 0)
+                    try:
+                        price = float(price_value) if price_value is not None else 0
+                    except (ValueError, TypeError):
+                        price = 0
+                    
                     matched_hotels.append({
                         "id": all_results['ids'][0][i],
-                        "name": all_results['metadatas'][0][i]['name'],
-                        "city": all_results['metadatas'][0][i]['city'],
-                        "concept": all_results['metadatas'][0][i]['concept'],
-                        "price": float(all_results['metadatas'][0][i]['price']),
+                        "name": all_results['metadatas'][0][i].get('name', 'Unknown'),
+                        "city": all_results['metadatas'][0][i].get('city', ''),
+                        "concept": all_results['metadatas'][0][i].get('concept', ''),
+                        "price": price,
                         "description": all_results['documents'][0][i],
                         "amenities": amenities_list
                     })
@@ -572,12 +579,19 @@ class TravelPlanner:
                             except:
                                 amenities_list = []
                             
+                            # Fiyat güvenli fetching
+                            price_value = metadata.get('price', 0)
+                            try:
+                                price = float(price_value) if price_value is not None else 0
+                            except (ValueError, TypeError):
+                                price = 0
+                            
                             matched_hotels.append({
                                 "id": all_hotels['ids'][i],
-                                "name": metadata['name'],
-                                "city": metadata['city'],
-                                "concept": metadata['concept'],
-                                "price": float(metadata['price']),
+                                "name": metadata.get('name', 'Unknown'),
+                                "city": metadata.get('city', ''),
+                                "concept": metadata.get('concept', ''),
+                                "price": price,
                                 "description": all_hotels['documents'][i],
                                 "amenities": amenities_list
                             })
@@ -610,12 +624,19 @@ class TravelPlanner:
                             except:
                                 amenities_list = []
                             
+                            # Fiyat güvenli fetching
+                            price_value = metadata.get('price', 0)
+                            try:
+                                price = float(price_value) if price_value is not None else 0
+                            except (ValueError, TypeError):
+                                price = 0
+                            
                             matched_hotels.append({
                                 "id": all_hotels['ids'][i],
-                                "name": metadata['name'],
-                                "city": metadata['city'],
-                                "concept": metadata['concept'],
-                                "price": float(metadata['price']),
+                                "name": metadata.get('name', 'Unknown'),
+                                "city": metadata.get('city', ''),
+                                "concept": metadata.get('concept', ''),
+                                "price": price,
                                 "description": all_hotels['documents'][i],
                                 "amenities": amenities_list
                             })

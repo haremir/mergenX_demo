@@ -60,26 +60,46 @@ class MergenVectorStore:
                 
                 # Arama motorunun anlam çıkaracağı metni oluşturuyoruz
                 hotel_name = hotel.get('hotel_name', hotel.get('name', 'Unknown'))
+                
+                # Konum bilgilerini güvenli şekilde al
                 location = hotel.get('location', {})
-                city = location.get('city', '') if isinstance(location, dict) else ''
-                district = location.get('district', '') if isinstance(location, dict) else ''
-                concept = hotel.get('concept', '')
-                desc = hotel.get('description', '')
+                if isinstance(location, dict):
+                    city = location.get('city', '').strip()
+                    district = location.get('district', '').strip()
+                else:
+                    city = ''
+                    district = ''
+                
+                concept = hotel.get('concept', '').strip()
+                desc = hotel.get('description', '').strip()
                 amenities = hotel.get('amenities', [])
                 amenities_str = ' '.join(amenities) if amenities else ''
                 
                 searchable_text = f"{hotel_name} {city} {district} {concept} {desc} {amenities_str}"
                 
+                # Fiyat kontrolü: kesinlikle sayısal olmalı
+                price_value = hotel.get("price_per_night", 0)
+                if price_value is None:
+                    price_value = 0
+                try:
+                    price_numeric = float(price_value)
+                except (ValueError, TypeError):
+                    print(f"[WARNING] Otel '{hotel_name}' için fiyat dönüştürülemedi: {price_value}. 0 kullanılıyor.")
+                    price_numeric = 0.0
+                
                 ids.append(unique_id)
                 documents.append(searchable_text)
                 
-                # Filtreleme için metadata ekliyoruz
+                # Filtreleme için metadata ekliyoruz - Tüm location bilgileri dahil
                 metadatas.append({
                     "uuid": unique_id,
                     "name": hotel_name,
                     "city": city.lower() if city else "",
+                    "district": district.lower() if district else "",
+                    "location": f"{city}, {district}".strip(", ") if city or district else "",
                     "concept": concept,
-                    "price": str(hotel.get("price_per_night", 0)),
+                    "price": price_numeric,  # Sayısal değer olarak sakla
+                    "description": desc[:200] if desc else "",  # İlk 200 karakter
                     "amenities": json.dumps(amenities) if amenities else "[]"
                 })
 
