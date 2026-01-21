@@ -7,7 +7,23 @@ load_dotenv()
 
 class MergenLLM:
     def __init__(self):
-        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        # Streamlit Cloud Secrets entegrasyonu
+        try:
+            import streamlit as st
+            # Streamlit içindeyiz - secrets'tan dene
+            try:
+                api_key = st.secrets["GROQ_API_KEY"]
+            except (KeyError, AttributeError, FileNotFoundError):
+                # Secrets'ta yoksa environment variable'dan al
+                api_key = os.getenv("GROQ_API_KEY")
+        except ImportError:
+            # Streamlit olmadığı için doğrudan environment variable'dan al
+            api_key = os.getenv("GROQ_API_KEY")
+        
+        if not api_key:
+            raise ValueError("GROQ_API_KEY bulunamadı! Lütfen .env dosyasında veya Streamlit Secrets'ta ayarlayınız.")
+        
+        self.client = Groq(api_key=api_key)
         self.model = "llama-3.3-70b-versatile"
 
     def generate_reasons(self, query: str, hotels: list):
