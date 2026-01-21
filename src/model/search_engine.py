@@ -3,9 +3,13 @@ import json
 import traceback
 import os
 import uuid
+import logging
 from pathlib import Path
 from src.model.embeddings import MergenEmbedder
 from src.model.llm_wrapper import MergenLLM
+
+# Logger ayarla
+logger = logging.getLogger(__name__)
 
 class TravelPlanner:
     """
@@ -18,20 +22,31 @@ class TravelPlanner:
     6. Akıllı Özet: LLM'e paketi göndererek kişiselleştirilmiş özet oluştur
     """
     
-    def __init__(self, db_path: str = "./data/chroma_db_v2"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
         self.error_message = None
         
         try:
-            # Dosya yollarını güvenli hale getir (OS-bağımsız)
-            self.db_path = os.path.join("data", "chroma_db_v2")
-            self.hotels_json_path = os.path.join("data", "hotels.json")
+            # Absolute path logic for cloud compatibility
+            if db_path is None:
+                db_path = "./data/chroma_db_v2"
             
-            print(f"[INFO] DB Path: {self.db_path}")
-            print(f"[INFO] Hotels JSON Path: {self.hotels_json_path}")
+            # Convert to absolute path (Linux/Streamlit Cloud uyumlu)
+            if not os.path.isabs(db_path):
+                db_path = os.path.join(os.getcwd(), db_path)
+            
+            self.db_path = db_path
+            self.hotels_json_path = os.path.join(os.getcwd(), "data", "hotels.json")
+            
+            print(f"[INFO] Working Directory: {os.getcwd()}")
+            print(f"[INFO] DB Path (absolute): {self.db_path}")
+            print(f"[INFO] Hotels JSON Path (absolute): {self.hotels_json_path}")
             
             # ChromaDB client'ı oluştur
             self.client = chromadb.PersistentClient(path=self.db_path)
+            
+            # SMART RE-INIT: Check Streamlit Cloud environment
+            is_streamlit_cloud = "STREAMLIT_CLOUD" in os.environ
+            print(f"[INFO] Environment: {'Streamlit Cloud' if is_streamlit_cloud else 'Local'}")
             
             # Koleksiyon var mı kontrol et
             try:
@@ -39,12 +54,53 @@ class TravelPlanner:
                 collection_count = self.collection.count()
                 print(f"[INFO] ChromaDB: {collection_count} otel yüklü")
                 
+                # METADATA INTEGRITY CHECK (özellikle Cloud'da önemli)
+                if collection_count > 0:
+                    try:
+                        sample = self.collection.get(limit=1, include=['metadatas'])
+                        if sample and sample['metadatas']:
+                            meta = sample['metadatas'][0]
+                            # Kritik alanları kontrol et
+                            city = meta.get('city')
+                            price = meta.get('price')
+                            
+                            if not city or city == 'bilinmiyor' or city == '':
+                                print(f"[CRITICAL] Metadata corruption detected: empty city. FORCING RESET")
+                                raise ValueError("Metadata integrity check failed: empty city")
+                            
+                            if price is None or (isinstance(price, (int, float)) and price <= 0):
+                                print(f"[CRITICAL] Metadata corruption detected: price={price}. FORCING RESET")
+                                raise ValueError("Metadata integrity check failed: invalid price")
+                            
+                            print(f"[SUCCESS] Metadata integrity OK (city={city}, price={price})")
+                    except Exception as integrity_error:
+                        print(f"[ERROR] Metadata check failed: {integrity_error}")
+                        print(f"[RECOVERY] Resetting database for metadata fix...")
+                        import shutil
+                        import time
+                        
+                        # Close and wipe
+                        try:
+                            del self.collection
+                            del self.client
+                        except:
+                            pass
+                        
+                        # Physical wipe
+                        if os.path.exists(self.db_path):
+                            shutil.rmtree(self.db_path)
+                            time.sleep(1)
+                        
+                        # Recreate
+                        self.client = chromadb.PersistentClient(path=self.db_path)
+                        raise ValueError("Database reset due to metadata corruption")
+                
                 if collection_count == 0:
                     print(f"[WARNING] ChromaDB koleksiyonu boş! Veri yükleniyor...")
                     self._initialize_db_from_hotels_json()
             
             except Exception as collection_error:
-                print(f"[WARNING] ChromaDB koleksiyonu bulunamadı: {collection_error}")
+                print(f"[WARNING] ChromaDB koleksiyonu bulunamadı/corrupted: {collection_error}")
                 print(f"[INFO] Vektör veritabanı oluşturuluyor...")
                 self._initialize_db_from_hotels_json()
             
@@ -144,14 +200,23 @@ class TravelPlanner:
                         amenities_list = hotel.get("amenities", [])
                         amenities_str = json.dumps(amenities_list) if amenities_list else "[]"
                         
+                        # Extract price safely and convert to float
+                        price_raw = hotel.get("price", 0)
+                        try:
+                            price_float = float(price_raw) if price_raw else 0.0
+                        except (ValueError, TypeError):
+                            price_float = 0.0
+                        
                         ids.append(unique_id)
                         documents.append(hotel_desc)
                         metadatas.append({
                             "uuid": unique_id,
                             "name": hotel_name,
-                            "city": hotel.get("city", "").lower(),
+                            "city": hotel.get("city", "bilinmiyor").lower(),
+                            "district": hotel.get("district", "bilinmiyor").lower(),
+                            "location": f"{hotel.get('city', 'bilinmiyor')}, {hotel.get('district', 'bilinmiyor')}",
                             "concept": hotel.get("concept", ""),
-                            "price": str(hotel.get("price", 0)),
+                            "price": price_float,  # FLOAT not STRING
                             "amenities": amenities_str
                         })
                     
@@ -288,7 +353,6 @@ class TravelPlanner:
             # ============================================================
             # ADIM 2: OTEL ARAMA (Preferences'ı Kullanarak)
             # ============================================================
-            print(f"\n[STEP 2] Otel Aranıyor - Tercihler: {preferences}")
             
             # Preferences'tan irrelevant kelimeleri temizle (uçuş, transfer vb.)
             clean_preferences = self._clean_preferences(preferences)
@@ -300,28 +364,12 @@ class TravelPlanner:
             if not hotels:
                 return ([], f"{destination_city} için uygun otel bulunamadı")
             
-            print(f"[SUCCESS] {len(hotels)} otel bulundu")
-            
-            # DEBUG: Metadata kontrolü
-            print(f"[DEBUG METADATA CHECK] İlk otel metadata'sı:")
-            try:
-                import streamlit as st
-                st.write("**[DEBUG] Otel Metadata Bilgisi:**")
-                for i, hotel in enumerate(hotels[:3]):  # İlk 3 oteli debug et
-                    st.write(f"**Hotel {i+1}: {hotel.get('name', 'N/A')}**")
-                    st.json(hotel)
-            except ImportError:
-                # Streamlit'te değilsek sadece print et
-                for i, hotel in enumerate(hotels[:3]):
-                    print(f"[DEBUG] Hotel {i+1}: {hotel}")
-            
             # ============================================================
             # ADIM 3: PAKETLEME VE FİLTRELEME
             # ============================================================
             packages = []
             
             for idx, hotel in enumerate(hotels, 1):
-                print(f"\n[PACKAGE {idx}] {hotel['name']} için paket oluşturuluyor...")
                 
                 try:
                     # Uçuş filtrele
@@ -462,11 +510,27 @@ class TravelPlanner:
     def _normalize_city_name(self, city: str) -> str:
         """
         Türkçe karakterleri normalize et ve karşılaştırma için hazırla.
-        İ -> i, I -> ı, lowercase, trim
+        Tüm harfleri lowercase'e çevir ve Türkçe karakterleri ASCII karşılıklarıyla değiştir.
         """
         if not city:
             return ""
-        return city.replace('İ', 'i').replace('I', 'ı').lower().strip()
+        # Step 1: Replace Turkish uppercase special characters FIRST
+        city = city.replace('İ', 'i')
+        city = city.replace('Ç', 'c')
+        city = city.replace('Ğ', 'g')
+        city = city.replace('Ş', 's')
+        city = city.replace('Ü', 'u')
+        city = city.replace('Ö', 'o')
+        # Step 2: Convert to lowercase (handles remaining uppercase)
+        city = city.lower()
+        # Step 3: Replace any remaining Turkish lowercase characters
+        city = city.replace('ç', 'c')
+        city = city.replace('ğ', 'g')
+        city = city.replace('ş', 's')
+        city = city.replace('ü', 'u')
+        city = city.replace('ö', 'o')
+        # Step 4: Strip whitespace
+        return city.strip()
 
     def _clean_preferences(self, preferences: list) -> list:
         """
@@ -484,24 +548,17 @@ class TravelPlanner:
         
         cleaned = []
         for phrase in preferences:
-            print(f"[CLEAN] Processing phrase: '{phrase}'")
             # Her phrase'ı kelimelere ayır
             words = phrase.lower().split()
-            print(f"[CLEAN]   Words: {words}")
             
             # Irrelevant kelimeler olmayan kelimeler tutulur
             filtered_words = [w for w in words if w not in irrelevant_words]
-            print(f"[CLEAN]   After filtering: {filtered_words}")
             
             # Eğer geriye kelime kaldıysa ekle
             if filtered_words:
                 cleaned_phrase = ' '.join(filtered_words)
                 cleaned.append(cleaned_phrase)
-                print(f"[CLEAN]   Added: '{cleaned_phrase}'")
-            else:
-                print(f"[CLEAN]   Skipped (all words filtered out)")
         
-        print(f"[DEBUG] Preferences cleaned: {preferences} -> {cleaned}")
         return cleaned
 
     def _search_hotels_by_preferences(self, search_query: str, destination_city: str, top_k: int = 3) -> list:
@@ -514,26 +571,19 @@ class TravelPlanner:
         3. Fallback: Vektör araması boşsa, sadece şehre göre ilk 5 oteli getir
         """
         try:
-            print(f"\n[DEBUG] Hotel search query: {search_query}")
-            print(f"[DEBUG] Destination city (raw): {destination_city}")
-            
             # 1. ŞEHİR NORMALIZASYONU
             normalized_city = self._normalize_city_name(destination_city)
-            print(f"[DEBUG] Normalized city: {destination_city} -> '{normalized_city}'")
             
             # Sorguyu vektore cevir
             query_vector = self.embedder.create_embeddings([search_query])[0].tolist()
-            print(f"[DEBUG] Query vector created")
 
             # 2. VEKTÖR ARAMASI YAP
             # Tüm otelleri al ve manual filtrele (flexible matching için)
-            print(f"[DEBUG] Querying vector DB (fetching {top_k * 3} results for filtering)...")
             all_results = self.collection.query(
                 query_embeddings=[query_vector],
                 n_results=top_k * 3,  # Daha fazla getir, sonra filtrele
                 include=['documents', 'metadatas']
             )
-            print(f"[DEBUG] Vector query returned {len(all_results['ids'][0])} results")
 
             # Sonuçları düzenle ve şehre göre filtrele
             matched_hotels = []
@@ -541,20 +591,17 @@ class TravelPlanner:
                 db_city = all_results['metadatas'][0][i].get('city', '')
                 normalized_db_city = self._normalize_city_name(db_city)
                 
-                print(f"[DEBUG] Checking hotel {i+1}: '{db_city}' -> '{normalized_db_city}'")
-                
                 # PARTIAL MATCH: normalized_city in normalized_db_city
                 if normalized_city in normalized_db_city or normalized_db_city in normalized_city:
-                    print(f"[DEBUG]   ✓ MATCH!")
                     amenities_data = all_results['metadatas'][0][i].get('amenities', '[]')
                     try:
                         amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
                     except:
                         amenities_list = []
                     
-                    # SYNC: Price fetching with type safety
-                    price_value = all_results['metadatas'][0][i].get('price', 0)
-                    price = float(price_value) if price_value is not None else 0.0
+                    # SYNC: Price fetching with standardized metadata field name
+                    price_value = all_results['metadatas'][0][i].get('price', 0.0)
+                    price = float(price_value) if price_value else 0.0
                     
                     matched_hotels.append({
                         "id": all_results['ids'][0][i],
@@ -568,15 +615,11 @@ class TravelPlanner:
                     
                     if len(matched_hotels) >= top_k:
                         break
-                else:
-                    print(f"[DEBUG]   ✗ No match")
             
             # 3. FALLBACK: Vektör araması sonuç vermezse, sadece şehre göre al
             if not matched_hotels:
-                print(f"[FALLBACK] Vector search returned nothing. Searching by city only...")
                 try:
                     all_hotels = self.collection.get(limit=1000, include=['documents', 'metadatas'])
-                    print(f"[FALLBACK] Total hotels in DB: {len(all_hotels['metadatas'])}")
                     
                     for i, metadata in enumerate(all_hotels['metadatas']):
                         db_city = metadata.get('city', '')
@@ -589,11 +632,11 @@ class TravelPlanner:
                             except:
                                 amenities_list = []
                             
-                            # SYNC: Price fetching with type safety + force metadata extraction
-                            price_value = metadata.get('price', 0) or metadata.get('price_value', 0) or metadata.get('price_per_night', 0)
-                            price = float(price_value) if price_value is not None else 0.0
-                            hotel_name = metadata.get('name', '') or metadata.get('hotel_name', '') or 'Unknown'
-                            hotel_city = metadata.get('city', '') or metadata.get('city_name', '') or ''
+                            # SYNC: Price and city fetching using standardized metadata field names
+                            price_value = metadata.get('price', 0.0)
+                            price = float(price_value) if price_value else 0.0
+                            hotel_name = metadata.get('name', 'Unknown')
+                            hotel_city = metadata.get('city', '')
                             
                             matched_hotels.append({
                                 "id": all_hotels['ids'][i],

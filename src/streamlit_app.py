@@ -3,6 +3,14 @@ import time
 import os
 import sys
 import re
+import logging
+
+# Configure logging (PRODUCTION MODE: nur INFO level)
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Proje kök dizinini Python yoluna ekle (Import hatalarını önlemek için)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -10,7 +18,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     from src.model.search_engine import MergenSearchEngine
 except ImportError as e:
-    st.error(f"Modül yükleme hatası: {e}. Lütfen src klasörünün ve içindeki __init__.py dosyalarının olduğundan emin olun.")
+    logger.error(f"Modül yükleme hatası: {e}", exc_info=True)
+    st.error(f"Modül yükleme hatası. Lütfen yöneticiyle iletişime geçin.")
     st.stop()
 
 # Sayfa Yapılandırması
@@ -73,8 +82,17 @@ def clear_search():
     st.session_state.search_time = 0
 
 # UI Başlıkları
-st.title("🚀 MergenX")
-st.markdown("### Bitur.com.tr Akıllı Konuşma Tabanlı Arama Motoru")
+st.markdown("""
+    <div style='text-align: center; margin-bottom: 20px;'>
+        <h1 style='color: #FF8C00; margin-bottom: 5px;'>🚀 MergenX</h1>
+        <p style='color: #FFFFFF; font-size: 16px; margin: 0;'>
+            <strong>Bitur.com.tr</strong> Akıllı Konuşma Tabanlı Arama Motoru
+        </p>
+        <p style='color: #AAAAAA; font-size: 13px; margin-top: 8px;'>
+            AI-destekli özel paket önerileri • Anlık fiyatlandırma • Kişiselleştirilmiş planlar
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 # Arama Motorunu Yükle
 @st.cache_resource
@@ -82,12 +100,12 @@ def load_engine():
     try:
         engine = MergenSearchEngine()
         if engine.error_message:
+            logger.warning(f"Engine warning: {engine.error_message}")
             st.warning(f"⚠️ {engine.error_message}")
         return engine
     except Exception as e:
-        st.error(f"Arama motoru başlatılamadı: {str(e)}")
-        with st.expander("🔧 Hata Detayları"):
-            st.code(str(e), language="python")
+        logger.error(f"Arama motoru başlatılamadı: {str(e)}", exc_info=True)
+        st.error(f"Arama motoru başlatılamadı. Lütfen sayfayı yenileyin veya yöneticiyle iletişime geçin.")
         return None
 
 engine = load_engine()
@@ -113,7 +131,11 @@ if engine:
     with st.form("search_form"):
         col1, col2 = st.columns([5, 1])
         with col1:
-            query = st.text_input("Nasıl bir tatil hayal ediyorsunuz?", placeholder="Örn: Antalya'da denize yakın uygun fiyatlı oteller...", key="search_input")
+            query = st.text_input(
+                "✍️ Nasıl bir tatil hayal ediyorsunuz?",
+                placeholder="Örn: Eşimle İzmir'e sessiz bir butik otel tatili, yüksek konforlu, özel havuz",
+                key="search_input"
+            )
         with col2:
             search_button = st.form_submit_button("🔍 Ara", use_container_width=True)
     
@@ -135,10 +157,10 @@ if engine:
             
             # Sonuç kontrolü
             if error_msg:
-                st.error(f"❌ Hata: {error_msg}")
-                with st.expander("🔧 Teknik Detaylar"):
-                    st.code(error_msg, language="python")
+                logger.error(f"Search error: {error_msg}")
+                st.error(f"❌ Arama yapılamadı. Lütfen tekrar deneyin.")
             elif not results or not isinstance(results, list):
+                logger.warning(f"No results for query: {query}")
                 st.error("❌ Arama sonucu bulunamadı. Lütfen bir daha deneyin.")
             else:
                 # Yeni Arama Yap Butonu

@@ -4,10 +4,41 @@ import os
 import uuid
 import shutil
 import time
+import tempfile
 from src.model.embeddings import MergenEmbedder
 
+def get_value(hotel: dict, keys_list):
+    """
+    JSON'dan veri çekerken tüm olasılıkları kontrol eden güvenli getter.
+    
+    Args:
+        hotel: Otel veri sözlüğü
+        keys_list: Kontrol edilecek anahtar isimleri (liste veya string)
+    
+    Returns:
+        Bulunmuş değer veya None
+    """
+    if isinstance(keys_list, str):
+        keys_list = [keys_list]
+    
+    for key in keys_list:
+        if key in hotel:
+            value = hotel[key]
+            if value is not None and (not isinstance(value, str) or value.strip()):
+                return value
+    
+    return None
+
 class MergenVectorStore:
-    def __init__(self, db_path: str = "./data/chroma_db_v2"):
+    def __init__(self, db_path: str = None):
+        # Absolute path logic for cloud compatibility
+        if db_path is None:
+            db_path = "./data/chroma_db_v2"
+        
+        # Convert to absolute path (Linux/Streamlit Cloud uyumlu)
+        if not os.path.isabs(db_path):
+            db_path = os.path.join(os.getcwd(), db_path)
+        
         self.db_path = db_path
         self.client = chromadb.PersistentClient(path=self.db_path)
         self.embedder = MergenEmbedder()
@@ -35,38 +66,49 @@ class MergenVectorStore:
             validated['name'] = 'Unknown Hotel'
         
         # ============================================================
-        # 2. CITY EXTRACTION - location.city
+        # 2. CITY EXTRACTION - location.city (STRICT VALIDATION)
         # ============================================================
-        city_value = None
-        if 'location' in hotel and isinstance(hotel['location'], dict):
-            city_value = hotel['location'].get('city', None)
-        elif 'city' in hotel:
-            city_value = hotel['city']
+        city_value = get_value(hotel, ['city'])
+        if not city_value:
+            city_value = get_value(hotel, ['location']) if isinstance(hotel.get('location'), dict) else None
+            if isinstance(city_value, dict):
+                city_value = city_value.get('city', None)
         
         if city_value is not None:
-            validated['city'] = str(city_value).strip()
+            city_clean = str(city_value).strip().lower()
+            if not city_clean or city_clean == "unknown city" or city_clean == "unknown":
+                print(f"[ERROR] Empty/invalid city for {hotel.get('name', 'Unknown')}: '{city_value}'. RAISING EXCEPTION")
+                raise ValueError(f"Hotel '{hotel.get('name', 'Unknown')}' has invalid city: '{city_value}'")
+            validated['city'] = city_clean
         else:
-            validated['city'] = 'Unknown City'
+            print(f"[ERROR] No city found for {hotel.get('name', 'Unknown')}. RAISING EXCEPTION")
+            raise ValueError(f"Hotel '{hotel.get('name', 'Unknown')}' has no city information")
         
         if not validated['city']:
-            validated['city'] = 'Unknown City'
+            raise ValueError(f"Hotel '{validated.get('name', 'Unknown')}' city is empty after cleanup")
         
         # ============================================================
-        # 3. DISTRICT EXTRACTION - location.district
+        # 3. DISTRICT EXTRACTION - location.district (STRICT VALIDATION)
         # ============================================================
-        district_value = None
-        if 'location' in hotel and isinstance(hotel['location'], dict):
-            district_value = hotel['location'].get('district', None)
-        elif 'district' in hotel:
-            district_value = hotel['district']
+        district_value = get_value(hotel, ['district'])
+        if not district_value:
+            district_value = get_value(hotel, ['location']) if isinstance(hotel.get('location'), dict) else None
+            if isinstance(district_value, dict):
+                district_value = district_value.get('district', None)
         
         if district_value is not None:
-            validated['district'] = str(district_value).strip()
+            district_clean = str(district_value).strip().lower()
+            if not district_clean or district_clean == "unknown district" or district_clean == "unknown":
+                print(f"[WARNING] Empty/invalid district for {validated['name']}: '{district_value}'. Using 'merkez' as default")
+                validated['district'] = 'merkez'  # Sensible default
+            else:
+                validated['district'] = district_clean
         else:
-            validated['district'] = 'Unknown District'
+            print(f"[WARNING] No district found for {validated['name']}. Using 'merkez' as default")
+            validated['district'] = 'merkez'  # Sensible default
         
         if not validated['district']:
-            validated['district'] = 'Unknown District'
+            validated['district'] = 'merkez'
         
         # ============================================================
         # 4. LOCATION - Kombinasyon
@@ -74,25 +116,25 @@ class MergenVectorStore:
         validated['location'] = f"{validated['city']}, {validated['district']}"
         
         # ============================================================
-        # 5. PRICE EXTRACTION - EXPLICIT FLOAT CONVERSION
+        # 5. PRICE EXTRACTION - EXPLICIT FLOAT CONVERSION (STRICT)
         # ============================================================
-        price_value = None
-        
-        # Fiyat alanlarını sırasıyla kontrol et
-        if 'price_per_night' in hotel:
-            price_value = hotel['price_per_night']
-        elif 'price' in hotel:
-            price_value = hotel['price']
+        price_value = get_value(hotel, ['price_per_night', 'price', 'fiyat', 'nightly_price'])
         
         if price_value is not None:
             try:
-                validated['price'] = float(price_value)
+                price_float = float(price_value)
+                # Ensure price is positive or warn
+                if price_float <= 0:
+                    print(f"[WARNING] Zero/negative price for {validated['name']}: {price_float}. Using default ₺1")
+                    validated['price'] = 1.0  # ₺1 uyarıcı, ₺0 değil
+                else:
+                    validated['price'] = price_float
             except (ValueError, TypeError):
-                print(f"[WARNING] Invalid price for {validated['name']}: {price_value} (type: {type(price_value)}). Using 0.0")
-                validated['price'] = 0.0
+                print(f"[WARNING] Invalid price for {validated['name']}: {price_value} (type: {type(price_value)}). Using default ₺1")
+                validated['price'] = 1.0  # Boş fiyat yerine ₺1
         else:
-            print(f"[WARNING] No price found for {validated['name']}. Using 0.0")
-            validated['price'] = 0.0
+            print(f"[WARNING] No price found for {validated['name']}. Using default ₺1")
+            validated['price'] = 1.0  # Boş fiyat yerine ₺1
         
         # ============================================================
         # 6. CONCEPT
@@ -129,7 +171,7 @@ class MergenVectorStore:
     def process_and_save(self, json_path: str):
         """
         NUCLEAR RESET: Physical database wipe + fresh client + manual extraction.
-        - Physical Wipe: shutil.rmtree the entire directory
+        - Physical Wipe: shutil.rmtree the entire directory (with retry logic)
         - Fresh Client: Recreate PersistentClient
         - Manual Extraction: No hotel.get() usage
         - Wait and Sync: time.sleep(1) for disk write
@@ -173,22 +215,28 @@ class MergenVectorStore:
             if os.path.exists(db_path_abs):
                 print(f"[NUCLEAR] Removing directory: {db_path_abs}")
                 try:
-                    # Try multiple times if files are locked
-                    import time as time_module
+                    # Try to move directory instead of delete (Windows file lock workaround)
                     for attempt in range(3):
                         try:
+                            # Strategy 1: Try direct removal
                             shutil.rmtree(db_path_abs)
                             print(f"[SUCCESS] Database directory removed (attempt {attempt+1})")
                             break
-                        except PermissionError as perm_error:
+                        except PermissionError:
                             if attempt < 2:
                                 print(f"[RETRY] Permission denied, waiting and retrying... ({attempt+1}/3)")
-                                time_module.sleep(0.5)
+                                time.sleep(1)
                             else:
-                                raise perm_error
+                                # Strategy 2: Move to temp directory instead
+                                try:
+                                    temp_dir = tempfile.gettempdir()
+                                    backup_path = os.path.join(temp_dir, f"chroma_db_v2_backup_{int(time.time())}")
+                                    shutil.move(db_path_abs, backup_path)
+                                    print(f"[SUCCESS] Database moved to backup: {backup_path}")
+                                except Exception as move_error:
+                                    print(f"[WARNING] Could not move database: {move_error}, continuing anyway...")
                 except Exception as rmtree_error:
-                    print(f"[ERROR] Failed to remove directory: {rmtree_error}")
-                    raise
+                    print(f"[WARNING] Failed to fully remove directory: {rmtree_error}, continuing anyway...")
             else:
                 print(f"[INFO] Database directory doesn't exist (first run): {db_path_abs}")
             
@@ -240,16 +288,16 @@ class MergenVectorStore:
                     if not clean_name:
                         clean_name = 'Bilinmiyor'
                     
-                    clean_city = str(validated.get('city', 'Bilinmiyor')).strip().lower()
-                    if not clean_city or clean_city == 'unknown city':
-                        clean_city = 'Bilinmiyor'
+                    clean_city = str(validated.get('city', 'bilinmiyor')).strip().lower()
+                    if not clean_city or clean_city == 'unknown city' or clean_city == 'bilinmiyor':
+                        clean_city = 'bilinmiyor'
                     
-                    clean_district = str(validated.get('district', 'Bilinmiyor')).strip().lower()
-                    if not clean_district or clean_district == 'unknown district':
-                        clean_district = 'Bilinmiyor'
+                    clean_district = str(validated.get('district', 'bilinmiyor')).strip().lower()
+                    if not clean_district or clean_district == 'unknown district' or clean_district == 'bilinmiyor':
+                        clean_district = 'bilinmiyor'
                     
-                    clean_location = str(validated.get('location', 'Bilinmiyor')).strip()
-                    if not clean_location or clean_location == 'Bilinmiyor, Bilinmiyor':
+                    clean_location = str(validated.get('location', 'bilinmiyor')).strip()
+                    if not clean_location or clean_location == 'bilinmiyor, bilinmiyor':
                         clean_location = f"{clean_city}, {clean_district}"
                     
                     clean_concept = str(validated.get('concept', 'Standard')).strip()
@@ -272,16 +320,16 @@ class MergenVectorStore:
                         clean_amenities = '[]'
                     
                     # ============================================================
-                    # STRICT METADATA MAPPING
+                    # STRICT METADATA MAPPING - EXPLICIT NAMING
                     # ============================================================
                     metadata = {
                         "uuid": str(unique_id),
                         "name": clean_name,
-                        "city": clean_city,
-                        "district": clean_district,
+                        "city": clean_city,  # str.lower() guaranteed
+                        "district": clean_district,  # str.lower() guaranteed
                         "location": clean_location,
                         "concept": clean_concept,
-                        "price": clean_price,  # PURE FLOAT
+                        "price": clean_price,  # PURE FLOAT (0.0 minimum)
                         "description": clean_description,
                         "amenities": clean_amenities
                     }
@@ -319,9 +367,22 @@ class MergenVectorStore:
             print(f"[SUCCESS] {len(embeddings)} embeddings created")
 
             # ============================================================
+            # DEBUG PRINT: First 3 hotels metadata before ChromaDB insert
+            # ============================================================
+            print(f"\n[DEBUG METADATA] İlk 3 Otel Metadata'sı ChromaDB'ye eklenmeden ÖNCE:")
+            for idx, metadata in enumerate(metadatas[:3]):
+                print(f"\n  [OTEL {idx+1}] {metadata.get('name', 'N/A')}")
+                print(f"     - City: {metadata.get('city', 'N/A')} (type: {type(metadata.get('city')).__name__})")
+                print(f"     - District: {metadata.get('district', 'N/A')}")
+                print(f"     - Location: {metadata.get('location', 'N/A')}")
+                print(f"     - Price: {metadata.get('price', 'N/A')} (type: {type(metadata.get('price')).__name__})")
+                print(f"     - Concept: {metadata.get('concept', 'N/A')}")
+                print(f"     - Amenities: {metadata.get('amenities', 'N/A')[:50]}...")
+
+            # ============================================================
             # ADD TO CHROMADB
             # ============================================================
-            print(f"[STEP 7] Adding {len(ids)} hotels to ChromaDB...")
+            print(f"\n[STEP 7] Adding {len(ids)} hotels to ChromaDB...")
             self.collection.add(
                 ids=ids,
                 embeddings=[emb.tolist() if hasattr(emb, 'tolist') else emb for emb in embeddings],
