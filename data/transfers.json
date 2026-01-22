@@ -1084,6 +1084,2229 @@
       "total_price": 1100,
       "currency": "TRY",
       "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-AYT-VIP-2000",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "KAŞ",
+        "to_area_name": "Kaş",
+        "estimated_duration": 180
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 3500.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-AYT-ECO-2000",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "KAŞ",
+        "to_area_name": "Kaş",
+        "estimated_duration": 180
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 2300.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-AYT-VIP-2001",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "MANAVGAT",
+        "to_area_name": "Manavgat",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 2000.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-AYT-ECO-2001",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "MANAVGAT",
+        "to_area_name": "Manavgat",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1300.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-AYT-VIP-2002",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "FINIKE",
+        "to_area_name": "Finike",
+        "estimated_duration": 110
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 2700.0,
+      "currency": "TRY",
+      "hotel_coverage": 21
+    },
+    {
+      "service_code": "TR-AYT-ECO-2002",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "FINIKE",
+        "to_area_name": "Finike",
+        "estimated_duration": 110
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1700.0,
+      "currency": "TRY",
+      "hotel_coverage": 21
+    },
+    {
+      "service_code": "TR-ADB-VIP-2003",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "ÇEŞME",
+        "to_area_name": "Çeşme",
+        "estimated_duration": 65
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1850.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-ADB-ECO-2003",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "ÇEŞME",
+        "to_area_name": "Çeşme",
+        "estimated_duration": 65
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1100.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-ADB-VIP-2004",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "SEFERIHISAR",
+        "to_area_name": "Seferihisar",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1400.0,
+      "currency": "TRY",
+      "hotel_coverage": 23
+    },
+    {
+      "service_code": "TR-ADB-ECO-2004",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "SEFERIHISAR",
+        "to_area_name": "Seferihisar",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 850.0,
+      "currency": "TRY",
+      "hotel_coverage": 23
+    },
+    {
+      "service_code": "TR-ADB-VIP-2005",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "FOÇA",
+        "to_area_name": "Foça",
+        "estimated_duration": 55
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1650.0,
+      "currency": "TRY",
+      "hotel_coverage": 24
+    },
+    {
+      "service_code": "TR-ADB-ECO-2005",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "FOÇA",
+        "to_area_name": "Foça",
+        "estimated_duration": 55
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 24
+    },
+    {
+      "service_code": "TR-ADB-VIP-2006",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "URLA",
+        "to_area_name": "Urla",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1300.0,
+      "currency": "TRY",
+      "hotel_coverage": 23
+    },
+    {
+      "service_code": "TR-ADB-ECO-2006",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "URLA",
+        "to_area_name": "Urla",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 800.0,
+      "currency": "TRY",
+      "hotel_coverage": 23
+    },
+    {
+      "service_code": "TR-ADB-VIP-2007",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "KUŞADASI",
+        "to_area_name": "Kuşadası",
+        "estimated_duration": 90
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 2200.0,
+      "currency": "TRY",
+      "hotel_coverage": 14
+    },
+    {
+      "service_code": "TR-ADB-ECO-2007",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "KUŞADASI",
+        "to_area_name": "Kuşadası",
+        "estimated_duration": 90
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1400.0,
+      "currency": "TRY",
+      "hotel_coverage": 14
+    },
+    {
+      "service_code": "TR-ADB-VIP-2008",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "DIKILI",
+        "to_area_name": "Dikili",
+        "estimated_duration": 120
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 2600.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-ADB-ECO-2008",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "DIKILI",
+        "to_area_name": "Dikili",
+        "estimated_duration": 120
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1650.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-BJV-VIP-2009",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "BITEZ",
+        "to_area_name": "Bitez",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 25
+    },
+    {
+      "service_code": "TR-BJV-ECO-2009",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "BITEZ",
+        "to_area_name": "Bitez",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 600.0,
+      "currency": "TRY",
+      "hotel_coverage": 25
+    },
+    {
+      "service_code": "TR-BJV-VIP-2010",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "GÜVERCINLIK",
+        "to_area_name": "Güvercinlik",
+        "estimated_duration": 55
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1350.0,
+      "currency": "TRY",
+      "hotel_coverage": 21
+    },
+    {
+      "service_code": "TR-BJV-ECO-2010",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "GÜVERCINLIK",
+        "to_area_name": "Güvercinlik",
+        "estimated_duration": 55
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 850.0,
+      "currency": "TRY",
+      "hotel_coverage": 21
+    },
+    {
+      "service_code": "TR-DLM-VIP-2011",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "MARMARIS",
+        "to_area_name": "Marmaris",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1700.0,
+      "currency": "TRY",
+      "hotel_coverage": 19
+    },
+    {
+      "service_code": "TR-DLM-ECO-2011",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "MARMARIS",
+        "to_area_name": "Marmaris",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1050.0,
+      "currency": "TRY",
+      "hotel_coverage": 19
+    },
+    {
+      "service_code": "TR-DLM-VIP-2012",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "FETHIYE",
+        "to_area_name": "Fethiye",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1400.0,
+      "currency": "TRY",
+      "hotel_coverage": 23
+    },
+    {
+      "service_code": "TR-DLM-ECO-2012",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "FETHIYE",
+        "to_area_name": "Fethiye",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 850.0,
+      "currency": "TRY",
+      "hotel_coverage": 23
+    },
+    {
+      "service_code": "TR-DLM-VIP-2013",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "ÖLÜDENIZ",
+        "to_area_name": "Ölüdeniz",
+        "estimated_duration": 50
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1500.0,
+      "currency": "TRY",
+      "hotel_coverage": 19
+    },
+    {
+      "service_code": "TR-DLM-ECO-2013",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "ÖLÜDENIZ",
+        "to_area_name": "Ölüdeniz",
+        "estimated_duration": 50
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 950.0,
+      "currency": "TRY",
+      "hotel_coverage": 19
+    },
+    {
+      "service_code": "TR-DLM-VIP-2014",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "DALYAN",
+        "to_area_name": "Dalyan",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1900.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-DLM-ECO-2014",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "DALYAN",
+        "to_area_name": "Dalyan",
+        "estimated_duration": 70
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1200.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-AYT-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-ADB-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-BJV-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-DLM-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-AYT-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-ADB-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-BJV-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-DLM-GENERAL-FB",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "GENERAL",
+        "to_area_name": "Genel Şehir Transferi",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VAN_STANDARD",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1000.0,
+      "currency": "TRY",
+      "hotel_coverage": 999
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3000",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_0",
+        "to_area_name": "Bölge 1",
+        "estimated_duration": 64
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1170.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3001",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_1",
+        "to_area_name": "Bölge 2",
+        "estimated_duration": 116
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1089.0,
+      "currency": "TRY",
+      "hotel_coverage": 20
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3002",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_2",
+        "to_area_name": "Bölge 3",
+        "estimated_duration": 90
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1007.0,
+      "currency": "TRY",
+      "hotel_coverage": 16
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3003",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_3",
+        "to_area_name": "Bölge 4",
+        "estimated_duration": 68
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2570.0,
+      "currency": "TRY",
+      "hotel_coverage": 19
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3004",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_4",
+        "to_area_name": "Bölge 5",
+        "estimated_duration": 100
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1054.0,
+      "currency": "TRY",
+      "hotel_coverage": 7
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3005",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_5",
+        "to_area_name": "Bölge 6",
+        "estimated_duration": 77
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1067.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3006",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_6",
+        "to_area_name": "Bölge 7",
+        "estimated_duration": 93
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2422.0,
+      "currency": "TRY",
+      "hotel_coverage": 7
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3007",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_7",
+        "to_area_name": "Bölge 8",
+        "estimated_duration": 83
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2934.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3008",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_8",
+        "to_area_name": "Bölge 9",
+        "estimated_duration": 114
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 929.0,
+      "currency": "TRY",
+      "hotel_coverage": 8
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3009",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_9",
+        "to_area_name": "Bölge 10",
+        "estimated_duration": 49
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1394.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3010",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_10",
+        "to_area_name": "Bölge 11",
+        "estimated_duration": 43
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2485.0,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3011",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_11",
+        "to_area_name": "Bölge 12",
+        "estimated_duration": 58
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1974.0,
+      "currency": "TRY",
+      "hotel_coverage": 20
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3012",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_12",
+        "to_area_name": "Bölge 13",
+        "estimated_duration": 55
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1173.0,
+      "currency": "TRY",
+      "hotel_coverage": 11
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3013",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_13",
+        "to_area_name": "Bölge 14",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1269.0,
+      "currency": "TRY",
+      "hotel_coverage": 9
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3014",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_14",
+        "to_area_name": "Bölge 15",
+        "estimated_duration": 45
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1219.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3015",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_15",
+        "to_area_name": "Bölge 16",
+        "estimated_duration": 116
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 975.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3016",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_16",
+        "to_area_name": "Bölge 17",
+        "estimated_duration": 66
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2306.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3017",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_17",
+        "to_area_name": "Bölge 18",
+        "estimated_duration": 81
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1396.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3018",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_18",
+        "to_area_name": "Bölge 19",
+        "estimated_duration": 32
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1638.0,
+      "currency": "TRY",
+      "hotel_coverage": 20
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3019",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_19",
+        "to_area_name": "Bölge 20",
+        "estimated_duration": 65
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2722.0,
+      "currency": "TRY",
+      "hotel_coverage": 5
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3020",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_20",
+        "to_area_name": "Bölge 21",
+        "estimated_duration": 91
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2002.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3021",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_21",
+        "to_area_name": "Bölge 22",
+        "estimated_duration": 100
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 809.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3022",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_22",
+        "to_area_name": "Bölge 23",
+        "estimated_duration": 77
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1445.0,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3023",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_23",
+        "to_area_name": "Bölge 24",
+        "estimated_duration": 72
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1954.0,
+      "currency": "TRY",
+      "hotel_coverage": 11
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3024",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_24",
+        "to_area_name": "Bölge 25",
+        "estimated_duration": 105
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1596.0,
+      "currency": "TRY",
+      "hotel_coverage": 19
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3025",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_25",
+        "to_area_name": "Bölge 26",
+        "estimated_duration": 65
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2813.0,
+      "currency": "TRY",
+      "hotel_coverage": 5
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3026",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_26",
+        "to_area_name": "Bölge 27",
+        "estimated_duration": 110
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 982.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3027",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_27",
+        "to_area_name": "Bölge 28",
+        "estimated_duration": 83
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1702.0,
+      "currency": "TRY",
+      "hotel_coverage": 19
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3028",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_28",
+        "to_area_name": "Bölge 29",
+        "estimated_duration": 43
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1308.0,
+      "currency": "TRY",
+      "hotel_coverage": 8
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3029",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_29",
+        "to_area_name": "Bölge 30",
+        "estimated_duration": 43
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 895.0,
+      "currency": "TRY",
+      "hotel_coverage": 13
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3030",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_30",
+        "to_area_name": "Bölge 31",
+        "estimated_duration": 84
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2876.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3031",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_31",
+        "to_area_name": "Bölge 32",
+        "estimated_duration": 100
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2618.0,
+      "currency": "TRY",
+      "hotel_coverage": 6
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3032",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_32",
+        "to_area_name": "Bölge 33",
+        "estimated_duration": 57
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2647.0,
+      "currency": "TRY",
+      "hotel_coverage": 6
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3033",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_33",
+        "to_area_name": "Bölge 34",
+        "estimated_duration": 110
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1411.0,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3034",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_34",
+        "to_area_name": "Bölge 35",
+        "estimated_duration": 115
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2962.0,
+      "currency": "TRY",
+      "hotel_coverage": 7
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3035",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_35",
+        "to_area_name": "Bölge 36",
+        "estimated_duration": 58
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2655.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3036",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_36",
+        "to_area_name": "Bölge 37",
+        "estimated_duration": 90
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1545.0,
+      "currency": "TRY",
+      "hotel_coverage": 13
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3037",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_37",
+        "to_area_name": "Bölge 38",
+        "estimated_duration": 52
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1163.0,
+      "currency": "TRY",
+      "hotel_coverage": 20
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3038",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_38",
+        "to_area_name": "Bölge 39",
+        "estimated_duration": 46
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 930.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3039",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_39",
+        "to_area_name": "Bölge 40",
+        "estimated_duration": 32
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2777.0,
+      "currency": "TRY",
+      "hotel_coverage": 5
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3040",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_40",
+        "to_area_name": "Bölge 41",
+        "estimated_duration": 74
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1822.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3041",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_41",
+        "to_area_name": "Bölge 42",
+        "estimated_duration": 113
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2059.0,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3042",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_42",
+        "to_area_name": "Bölge 43",
+        "estimated_duration": 38
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1793.0,
+      "currency": "TRY",
+      "hotel_coverage": 5
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3043",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_43",
+        "to_area_name": "Bölge 44",
+        "estimated_duration": 90
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1066.0,
+      "currency": "TRY",
+      "hotel_coverage": 6
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3044",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_44",
+        "to_area_name": "Bölge 45",
+        "estimated_duration": 111
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1801.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3045",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_45",
+        "to_area_name": "Bölge 46",
+        "estimated_duration": 58
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2707.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3046",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_46",
+        "to_area_name": "Bölge 47",
+        "estimated_duration": 76
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2610.0,
+      "currency": "TRY",
+      "hotel_coverage": 20
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3047",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_47",
+        "to_area_name": "Bölge 48",
+        "estimated_duration": 30
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2121.0,
+      "currency": "TRY",
+      "hotel_coverage": 7
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3048",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_48",
+        "to_area_name": "Bölge 49",
+        "estimated_duration": 112
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1108.0,
+      "currency": "TRY",
+      "hotel_coverage": 8
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3049",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_49",
+        "to_area_name": "Bölge 50",
+        "estimated_duration": 78
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1692.0,
+      "currency": "TRY",
+      "hotel_coverage": 20
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3050",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_50",
+        "to_area_name": "Bölge 51",
+        "estimated_duration": 109
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 5,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1615.0,
+      "currency": "TRY",
+      "hotel_coverage": 17
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3051",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_51",
+        "to_area_name": "Bölge 52",
+        "estimated_duration": 36
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2853.0,
+      "currency": "TRY",
+      "hotel_coverage": 20
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3052",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_52",
+        "to_area_name": "Bölge 53",
+        "estimated_duration": 34
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2820.0,
+      "currency": "TRY",
+      "hotel_coverage": 14
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3053",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_53",
+        "to_area_name": "Bölge 54",
+        "estimated_duration": 62
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1343.0,
+      "currency": "TRY",
+      "hotel_coverage": 9
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3054",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_54",
+        "to_area_name": "Bölge 55",
+        "estimated_duration": 71
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1826.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3055",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_55",
+        "to_area_name": "Bölge 56",
+        "estimated_duration": 110
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 7,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1744.0,
+      "currency": "TRY",
+      "hotel_coverage": 7
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3056",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_56",
+        "to_area_name": "Bölge 57",
+        "estimated_duration": 95
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1592.0,
+      "currency": "TRY",
+      "hotel_coverage": 8
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3057",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_57",
+        "to_area_name": "Bölge 58",
+        "estimated_duration": 71
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 909.0,
+      "currency": "TRY",
+      "hotel_coverage": 14
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3058",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_58",
+        "to_area_name": "Bölge 59",
+        "estimated_duration": 102
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2086.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3059",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_59",
+        "to_area_name": "Bölge 60",
+        "estimated_duration": 49
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1951.0,
+      "currency": "TRY",
+      "hotel_coverage": 10
+    },
+    {
+      "service_code": "TR-BJV-EXTRA-3060",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "BJV",
+        "from_name": "BJV Havalimanı",
+        "to_area_code": "EXTRA_60",
+        "to_area_name": "Bölge 61",
+        "estimated_duration": 32
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1676.0,
+      "currency": "TRY",
+      "hotel_coverage": 12
+    },
+    {
+      "service_code": "TR-ADB-EXTRA-3061",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "ADB Havalimanı",
+        "to_area_code": "EXTRA_61",
+        "to_area_name": "Bölge 62",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 6,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 1432.0,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3062",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_62",
+        "to_area_name": "Bölge 63",
+        "estimated_duration": 74
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2325.0,
+      "currency": "TRY",
+      "hotel_coverage": 16
+    },
+    {
+      "service_code": "TR-AYT-EXTRA-3063",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "AYT Havalimanı",
+        "to_area_code": "EXTRA_63",
+        "to_area_name": "Bölge 64",
+        "estimated_duration": 80
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 4,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 2171.0,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-DLM-EXTRA-3064",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "DLM",
+        "from_name": "DLM Havalimanı",
+        "to_area_code": "EXTRA_64",
+        "to_area_name": "Bölge 65",
+        "estimated_duration": 114
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC"
+        ]
+      },
+      "total_price": 899.0,
+      "currency": "TRY",
+      "hotel_coverage": 8
     }
   ]
 }

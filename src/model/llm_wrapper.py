@@ -328,19 +328,28 @@ class MergenLLM:
         """
         Kullanıcının sorgusunu analiz ederek seyahat parametrelerini çıkarır.
         
-        Args:
-            user_query: Kullanıcının seyahat sorgusu
-            
-        Returns:
-            {
-                "intent": {"flight": true/false, "transfer": true/false, "hotel": true},
-                "destination_city": "İzmir",
-                "destination_iata": "ADB",
-                "origin_iata": "IST",
-                "travel_style": "ekonomik/lüks/aile",
-                "preferences": ["aquapark", "sessiz", "denize sıfır"]
-            }
+        PROMPT EXPANSION:
+        - Kısa promptlar ("Hel", "Kız kıza") → Genişletilmiş niyet
+        - "Kız kıza" → "eğlence, merkezi, sosyal, nightlife, bar"
+        - "Help", "Muhafazakar" → İlgili tercihler eklenir
         """
+        # 🔥 PROMPT EXPANSION: Kısa promptları genişlet
+        expansions = {
+            "kız kıza": "eğlence, merkezi, sosyal, nightlife, bar, müzik, cafe",
+            "kız": "eğlence, merkezi, sosyal, nightlife, bar, müzik, cafe",
+            "help": "yardımcı personel, rehber, bilgilendirme, destek",
+            "hel": "yardımcı personel, rehber, bilgilendirme, destek",
+            "muhafazakar": "aile, çocuk, kapalı havuz, hijab friendly, sessiz",
+            "balayı": "romantik, honeymoon, jakuzi, özel, couples",
+            "iş": "business, wifi, workstation, meeting, conference"
+        }
+        
+        # User query'yi lowercase yap ve expansion uygula
+        query_lower = user_query.lower()
+        for keyword, expansion in expansions.items():
+            if keyword in query_lower:
+                user_query = f"{user_query} ({expansion})"
+                print(f"[PROMPT EXPANSION] '{keyword}' → '{expansion}'")
         # Şehir-IATA eşleştirme sözlüğü
         city_to_iata = {
             "istanbul": "IST",
