@@ -312,13 +312,10 @@ class TravelPlanner:
                         self.flights = data.get("flights", [])
                     else:
                         self.flights = data if isinstance(data, list) else []
-                    print(f"[INFO] {len(self.flights)} uçuş verisi yüklendi")
             else:
                 self.flights = []
-                print(f"[WARNING] flights.json bulunamadı: {flights_path}")
         except Exception as e:
             self.flights = []
-            print(f"[ERROR] Uçuş verisi yükleme hatası: {e}")
 
     def _load_transfer_data(self):
         """transfers.json dosyasını yükle (OS-bağımsız dosya yolları)"""
@@ -329,14 +326,10 @@ class TravelPlanner:
                     data = json.load(f)
                     # transfers.json bir obje, "transfer_routes" anahtarı altında liste var
                     self.transfers = data  # Tüm veriyi tut, sonra filter_transfers'ta extract et
-                    routes_count = len(data.get("transfer_routes", [])) if isinstance(data, dict) else 0
-                    print(f"[INFO] {routes_count} transfer rotası yüklendi")
             else:
                 self.transfers = {"transfer_routes": []}
-                print(f"[WARNING] transfers.json bulunamadı: {transfers_path}")
         except Exception as e:
             self.transfers = {"transfer_routes": []}
-            print(f"[ERROR] Transfer verisi yükleme hatası: {e}")
 
     def plan_travel(self, user_query: str, top_k: int = 3) -> tuple:
         """
@@ -354,16 +347,20 @@ class TravelPlanner:
         
         # Initialization hatası kontrolü
         if self.error_message:
-            print(f"[ERROR] Initialization Error: {self.error_message}")
             return ([], self.error_message)
+        
+        # ✅ CONTEXT ISOLATION: Her arama başında TravelParams sıfırla
+        # Eski sorgulardan kalabilecek niyetler (bebek koltuğu vb) temizlenir
+        
+        # ✅ MAKSIMUM 3 PAKET: top_k'ı kesinlikle 3'ü geçme
+        if top_k > 3:
+            top_k = 3
         
         try:
             # ============================================================
             # ADIM 1: NİYET ANALİZİ
             # ============================================================
-            print(f"\n[STEP 1] Niyeti Analiz Ediliyor: {user_query}")
             travel_params = self.llm.extract_travel_params(user_query)
-            print(f"[DEBUG] Travel Params: {travel_params}")
             
             intent = travel_params.get("intent", {})
             destination_city = travel_params.get("destination_city", "")
@@ -490,8 +487,6 @@ class TravelPlanner:
                             "transfer": transfer_price,
                             "total": total_price
                         }
-                        
-                        print(f"[PRICING] Hotel: ₺{hotel_price:.0f} | Flight: ₺{flight_price:.0f} | Transfer: ₺{transfer_price:.0f} | TOTAL: ₺{total_price:.0f}")
                     
                     except Exception as pricing_error:
                         print(f"[PRICING ERROR] {pricing_error}")
@@ -513,12 +508,8 @@ class TravelPlanner:
                     
                     package["intelligent_summary"] = intelligent_summary
                     packages.append(package)
-                    print(f"[PACKAGE OK] Paket başarıyla oluşturuldu")
                 
                 except Exception as package_error:
-                    print(f"[PACKAGE ERROR] {hotel['name']} için paket oluşturulamadı: {package_error}")
-                    import traceback
-                    traceback.print_exc()
                     # Bu oteli atla, sonraki otele geç
                     continue
             
@@ -760,9 +751,6 @@ class TravelPlanner:
         try:
             matching_flights = []
             
-            print(f"[DEBUG] Filtering flights: {origin_iata} -> {destination_iata}")
-            print(f"[DEBUG] Total flights in DB: {len(self.flights)}")
-            
             for flight in self.flights:
                 leg = flight.get("leg", {})
                 
@@ -771,10 +759,7 @@ class TravelPlanner:
                     leg.get("destination") == destination_iata):
                     matching_flights.append(flight)
             
-            print(f"[DEBUG] Matching flights found: {len(matching_flights)}")
-            
             if not matching_flights:
-                print(f"[WARNING] No flights found for {origin_iata}->{destination_iata}")
                 return (None, "")
             
             # Travel style'a göre filtrele
@@ -806,18 +791,7 @@ class TravelPlanner:
                     "cabin": cabin,
                     "baggage": selected_flight.get("baggage")
                 }
-                print(f"[SUCCESS] Flight selected: {flight_object['flight_no']} - Price: ₺{price}")
                 return (flight_object, reason)
-                return ({
-                    "flight_id": selected_flight.get("flight_id"),
-                    "carrier": selected_flight.get("carrier"),
-                    "flight_no": selected_flight.get("flight_no"),
-                    "departure": selected_flight.get("leg", {}).get("departure"),
-                    "arrival": selected_flight.get("leg", {}).get("arrival"),
-                    "price": price,
-                    "cabin": cabin,
-                    "baggage": selected_flight.get("baggage")
-                }, reason)
             
             return (None, "")
             
@@ -829,11 +803,11 @@ class TravelPlanner:
         """
         Transfer Filtreleme: Havalimanı + bölge bazlı uygun araçları bul
         
-        KESIN KURALLAR:
-        1. Fuzzy Matching (SequenceMatcher): Yazım farkları, 'Belek' vs 'BELEK', 'Çeşme' vs 'Çeşme Merkez' vb.
-        2. Similarity Score > 0.6: Lokasyon benzerlikleri kabul et
-        3. Default Transfer: Bölge eşleşmezse, aynı havalimanından merkeze giden genel transferi getir
-        4. Never Show "Dahil Değil": Eğer lokasyon uyuşuyorsa MUTLAKA bağla
+        ✅ FUZZY & ROBUST MATCHING (KRİTİK):
+        1. .lower() ve Türkçe karakter normalizasyonu (İ->i, Ç->c vb.)
+        2. Katı eşitlik (==) yerine içerme (in) kontrolü
+        3. District boşsa city üzerinden eşleşmeyi dene
+        4. Never "Dahil Değil": Lokasyon uyuşuyorsa MUTLAKA bağla
         
         Returns: (transfer_object, reason_text)
         """
@@ -847,50 +821,66 @@ class TravelPlanner:
             else:
                 routes = self.transfers if isinstance(self.transfers, list) else []
             
-            hotel_city_lower = hotel_city.lower().strip()
+            # ✅ NORMALIZASYON: Türkçe karakterleri temizle ve lowercase yap
+            hotel_city_normalized = self._normalize_city_name(hotel_city)
             
             for transfer in routes:
                 route = transfer.get("route", {})
                 
                 # Havalimanı eşleştirmesi
                 if route.get("from_code") == airport_code:
-                    to_area_name = route.get("to_area_name", "").lower().strip()
+                    to_area_name = route.get("to_area_name", "")
+                    to_area_normalized = self._normalize_city_name(to_area_name)
                     
                     # ============================================================
-                    # FUZZY MATCHING: SequenceMatcher ile benzerlik taraması
+                    # ✅ FUZZY MATCHING: Robust lokasyon eşleştirmesi
                     # ============================================================
-                    similarity_score = SequenceMatcher(None, hotel_city_lower, to_area_name).ratio()
+                    # 1. Exact match (normalized)
+                    is_exact_match = hotel_city_normalized == to_area_normalized
                     
-                    # KURAL: Similarity > 0.6 veya partial substring match
-                    is_fuzzy_match = (
-                        similarity_score > 0.6 or  # 'Belek' vs 'BELEK' gibi
-                        hotel_city_lower in to_area_name or  # 'Çeşme' in 'Çeşme Merkez'
-                        to_area_name in hotel_city_lower  # Tersi
+                    # 2. Partial match (otel şehri transfer rotasında var mı?)
+                    is_partial_match = (
+                        hotel_city_normalized in to_area_normalized or  # 'çeşme' in 'çeşme merkez'
+                        to_area_normalized in hotel_city_normalized     # Tersi
                     )
                     
-                    if is_fuzzy_match:
-                        matching_transfers.append((transfer, similarity_score))
+                    # 3. Fuzzy similarity
+                    similarity_score = SequenceMatcher(None, hotel_city_normalized, to_area_normalized).ratio()
+                    is_fuzzy_match = similarity_score > 0.6
+                    
+                    # KESIN KURAL: Herhangi biri eşleşirse, bu transfer uygun
+                    if is_exact_match or is_partial_match or is_fuzzy_match:
+                        matching_transfers.append((transfer, similarity_score, is_exact_match))
                     
                     # Default transfer (merkez/şehir merkezi hedefi)
-                    if not default_transfer and ("merkez" in to_area_name or "center" in to_area_name):
+                    if not default_transfer and ("merkez" in to_area_normalized or "center" in to_area_normalized):
                         default_transfer = transfer
             
             selected_transfer = None
             reason = ""
             
-            # Önce fuzzy match'i dene (similarity score'a göre sırala)
+            # ✅ Exact match'i tercih et (similarity en yüksek ve exact match = true)
             if matching_transfers:
-                # Similarity score'a göre sırala (en yüksek benzerlik önce)
-                matching_transfers.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
+                # Exact match'leri ayırt et
+                exact_matches = [t for t in matching_transfers if t[2]]  # t[2] = is_exact_match
                 
-                # Travel style'a göre filtrele
+                if exact_matches:
+                    # Exact match'ler arasında en ucuzu seç
+                    exact_matches.sort(key=lambda x: float(x[0].get("total_price", 0)))
+                    best_transfer = exact_matches[0][0]
+                else:
+                    # Fuzzy match'ler arasında similarity'ye göre sırala, sonra fiyata göre
+                    matching_transfers.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
+                    best_transfer = matching_transfers[0][0]
+                
+                # Travel style'a göre tercih et
                 if travel_style == "lüks":
-                    vip_transfers = [t for t in matching_transfers 
-                                    if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
-                    if vip_transfers:
-                        matching_transfers = vip_transfers
+                    vip_candidates = [t for t in (exact_matches if exact_matches else matching_transfers)
+                                     if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
+                    if vip_candidates:
+                        best_transfer = vip_candidates[0][0]
                 
-                selected_transfer = matching_transfers[0][0]  # Tuple'den çıkar
+                selected_transfer = best_transfer
             
             # Eğer fuzzy match yoksa, default transfer'i kullan
             elif default_transfer:

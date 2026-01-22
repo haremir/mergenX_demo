@@ -348,11 +348,15 @@ if engine:
                             else:
                                 st.metric("🚗 Transfer", "—")
                         
-                        # TOPLAM
+                        # TOPLAM - ✅ BELİRGİN GÖSTERIM
                         st.divider()
-                        st.markdown(f"### 💰 TOPLAM PAKET TUTARI")
-                        st.markdown(f"# ₺{total_price:,.0f}", help="Otel + Uçuş + Transfer")
+                        col_total1, col_total2 = st.columns([1, 2])
+                        with col_total1:
+                            st.markdown("### 💰")
+                        with col_total2:
+                            st.markdown(f"## TOPLAM: **₺{total_price:,.0f}**")
                         
+                        st.markdown(f"*Otel ₺{hotel_price:,.0f} + Uçuş ₺{flight_price:,.0f} + Transfer ₺{transfer_price:,.0f}*")
                         st.divider()
 
                     
