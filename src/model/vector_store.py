@@ -66,35 +66,50 @@ class MergenVectorStore:
             validated['name'] = 'Unknown Hotel'
         
         # ============================================================
-        # 2. CITY EXTRACTION - location.city (STRICT VALIDATION)
+        # 2. CITY EXTRACTION - location.city (STRICT VALIDATION & NESTED DICT)
         # ============================================================
-        city_value = get_value(hotel, ['city'])
-        if not city_value:
-            city_value = get_value(hotel, ['location']) if isinstance(hotel.get('location'), dict) else None
-            if isinstance(city_value, dict):
-                city_value = city_value.get('city', None)
+        city_value = None
+        
+        # Try direct 'city' field first
+        if 'city' in hotel and hotel['city']:
+            city_value = hotel['city']
+        # Try nested location.city structure
+        elif 'location' in hotel and isinstance(hotel['location'], dict):
+            if 'city' in hotel['location'] and hotel['location']['city']:
+                city_value = hotel['location']['city']
+        # Try alternate location keys
+        elif 'location' in hotel and isinstance(hotel['location'], str):
+            # Parse if it's a comma-separated string like "İzmir, Çeşme"
+            parts = hotel['location'].split(',')
+            if parts:
+                city_value = parts[0].strip()
         
         if city_value is not None:
             city_clean = str(city_value).strip().lower()
-            if not city_clean or city_clean == "unknown city" or city_clean == "unknown":
-                print(f"[ERROR] Empty/invalid city for {hotel.get('name', 'Unknown')}: '{city_value}'. RAISING EXCEPTION")
-                raise ValueError(f"Hotel '{hotel.get('name', 'Unknown')}' has invalid city: '{city_value}'")
+            if not city_clean or city_clean == "unknown city" or city_clean == "unknown" or city_clean == "bilinmiyor":
+                print(f"[ERROR] Empty/invalid city for {validated.get('name', 'Unknown')}: '{city_value}'. RAISING EXCEPTION")
+                raise ValueError(f"Hotel '{validated.get('name', 'Unknown')}' has invalid city: '{city_value}'")
             validated['city'] = city_clean
         else:
-            print(f"[ERROR] No city found for {hotel.get('name', 'Unknown')}. RAISING EXCEPTION")
-            raise ValueError(f"Hotel '{hotel.get('name', 'Unknown')}' has no city information")
+            print(f"[ERROR] No city found for {validated.get('name', 'Unknown')}. Checked: direct 'city', location.city, and location string. RAISING EXCEPTION")
+            print(f"[DEBUG] Hotel structure: {json.dumps({k: str(v)[:50] for k, v in hotel.items()}, indent=2)}")
+            raise ValueError(f"Hotel '{validated.get('name', 'Unknown')}' has no city information")
         
         if not validated['city']:
             raise ValueError(f"Hotel '{validated.get('name', 'Unknown')}' city is empty after cleanup")
         
         # ============================================================
-        # 3. DISTRICT EXTRACTION - location.district (STRICT VALIDATION)
+        # 3. DISTRICT EXTRACTION - location.district (STRICT VALIDATION & NESTED DICT)
         # ============================================================
-        district_value = get_value(hotel, ['district'])
-        if not district_value:
-            district_value = get_value(hotel, ['location']) if isinstance(hotel.get('location'), dict) else None
-            if isinstance(district_value, dict):
-                district_value = district_value.get('district', None)
+        district_value = None
+        
+        # Try direct 'district' field first
+        if 'district' in hotel and hotel['district']:
+            district_value = hotel['district']
+        # Try nested location.district structure
+        elif 'location' in hotel and isinstance(hotel['location'], dict):
+            if 'district' in hotel['location'] and hotel['location']['district']:
+                district_value = hotel['location']['district']
         
         if district_value is not None:
             district_clean = str(district_value).strip().lower()
@@ -347,8 +362,17 @@ class MergenVectorStore:
                     
                     metadatas.append(metadata)
                     
+                    # ============================================================
+                    # DEBUG OUTPUT: Every 100 hotels print example
+                    # ============================================================
                     if (idx + 1) % 100 == 0:
-                        print(f"[PROGRESS] {idx + 1}/{len(hotels_list)} hotels validated")
+                        print(f"[DEBUG] {idx + 1}/{len(hotels_list)} hotels validated")
+                        print(f"        Örnek Otel: {clean_name} - {clean_city}")
+                    
+                    if idx == 0:
+                        # Print first hotel in detail
+                        print(f"[DEBUG FIRST HOTEL] {clean_name} | City: {clean_city} | District: {clean_district} | Price: {clean_price}")
+                
                 
                 except Exception as hotel_error:
                     print(f"[ERROR] Failed to validate hotel {idx}: {hotel_error}")

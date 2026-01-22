@@ -19,7 +19,7 @@ try:
     from src.model.search_engine import MergenSearchEngine
 except ImportError as e:
     logger.error(f"Modül yükleme hatası: {e}", exc_info=True)
-    st.error(f"Modül yükleme hatası. Lütfen yöneticiyle iletişime geçin.")
+    st.error(f"❌ Modül yükleme hatası. Lütfen yöneticiyle iletişime geçin.")
     st.stop()
 
 # Sayfa Yapılandırması
@@ -105,7 +105,7 @@ def load_engine():
         return engine
     except Exception as e:
         logger.error(f"Arama motoru başlatılamadı: {str(e)}", exc_info=True)
-        st.error(f"Arama motoru başlatılamadı. Lütfen sayfayı yenileyin veya yöneticiyle iletişime geçin.")
+        st.error(f"❌ Arama motoru başlatılamadı. Lütfen sayfayı yenileyin veya yöneticiyle iletişime geçin.")
         return None
 
 engine = load_engine()
@@ -117,10 +117,10 @@ if engine:
         
         # Engine error kontrolü
         if engine.error_message:
-            st.error(engine.error_message)
+            st.error(f"❌ {engine.error_message}")
         else:
-            st.success("Vektör DB: Bağlı")
-            st.success("LLM: Aktif")
+            st.success("✅ Vektör DB: Bağlı")
+            st.success("✅ LLM: Aktif")
         top_k = st.slider("Öneri Sayısı", 1, 10, 3)
         st.divider()
         if st.button("🔄 Aramayı Temizle", use_container_width=True):
@@ -158,7 +158,7 @@ if engine:
             # Sonuç kontrolü
             if error_msg:
                 logger.error(f"Search error: {error_msg}")
-                st.error(f"❌ Arama yapılamadı. Lütfen tekrar deneyin.")
+                st.error(f"❌ Arama yapılamadı: {str(e)}. Lütfen tekrar deneyin.")
             elif not results or not isinstance(results, list):
                 logger.warning(f"No results for query: {query}")
                 st.error("❌ Arama sonucu bulunamadı. Lütfen bir daha deneyin.")
@@ -185,9 +185,9 @@ if engine:
                         intelligent_summary = hotel.get("reason", "")
                         
                         if intelligent_summary:
-                            st.info(intelligent_summary)
+                            st.success(f"✅ {intelligent_summary}", icon="✨")
                         else:
-                            st.info("Kriterlerinizle tam uyumlu bir paket hazırlandı!")
+                            st.success("✅ Kriterlerinizle tam uyumlu bir paket hazırlandı!", icon="✨")
                         
                         st.divider()
                         
@@ -350,10 +350,11 @@ if engine:
                         
                         # TOPLAM
                         st.divider()
-                        st.markdown(f"### 💰 **TOPLAM PAKET TUTARI: ₺{total_price:,.0f}**")
+                        st.markdown(f"### 💰 TOPLAM PAKET TUTARI")
+                        st.markdown(f"# ₺{total_price:,.0f}", help="Otel + Uçuş + Transfer")
                         
                         st.divider()
 
                     
 else:
-    st.warning("Sistem yüklenemedi. Lütfen terminal loglarını kontrol edin.")
+    st.warning("⚠️ Sistem yüklenemedi. Lütfen terminal loglarını kontrol edin.")

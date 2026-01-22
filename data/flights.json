@@ -1351,6 +1351,52 @@
         "Altınoluk",
         "Akçay"
       ]
+    },
+    {
+      "flight_id": "TK1748-20260618",
+      "carrier": "TK",
+      "flight_no": "1748",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-18T17:00:00",
+        "arrival": "2026-06-18T18:30:00"
+      },
+      "pricing": {
+        "amount": 3150.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Konyaaltı",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "PC2022-20260618",
+      "carrier": "PC",
+      "flight_no": "2022",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-18T06:30:00",
+        "arrival": "2026-06-18T08:00:00"
+      },
+      "pricing": {
+        "amount": 1850.0,
+        "currency": "TRY",
+        "fare_class": "E",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Muratpaşa",
+        "Lara"
+      ]
     }
   ],
   "route_statistics": {

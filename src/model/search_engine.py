@@ -5,6 +5,7 @@ import os
 import uuid
 import logging
 from pathlib import Path
+from difflib import SequenceMatcher
 from src.model.embeddings import MergenEmbedder
 from src.model.llm_wrapper import MergenLLM
 
@@ -37,22 +38,18 @@ class TravelPlanner:
             self.db_path = db_path
             self.hotels_json_path = os.path.join(os.getcwd(), "data", "hotels.json")
             
-            print(f"[INFO] Working Directory: {os.getcwd()}")
-            print(f"[INFO] DB Path (absolute): {self.db_path}")
-            print(f"[INFO] Hotels JSON Path (absolute): {self.hotels_json_path}")
+            pass  # Production ready
             
             # ChromaDB client'ı oluştur
             self.client = chromadb.PersistentClient(path=self.db_path)
             
             # SMART RE-INIT: Check Streamlit Cloud environment
             is_streamlit_cloud = "STREAMLIT_CLOUD" in os.environ
-            print(f"[INFO] Environment: {'Streamlit Cloud' if is_streamlit_cloud else 'Local'}")
             
             # Koleksiyon var mı kontrol et
             try:
                 self.collection = self.client.get_collection(name="hotels")
                 collection_count = self.collection.count()
-                print(f"[INFO] ChromaDB: {collection_count} otel yüklü")
                 
                 # METADATA INTEGRITY CHECK (özellikle Cloud'da önemli)
                 if collection_count > 0:
@@ -65,17 +62,11 @@ class TravelPlanner:
                             price = meta.get('price')
                             
                             if not city or city == 'bilinmiyor' or city == '':
-                                print(f"[CRITICAL] Metadata corruption detected: empty city. FORCING RESET")
                                 raise ValueError("Metadata integrity check failed: empty city")
                             
                             if price is None or (isinstance(price, (int, float)) and price <= 0):
-                                print(f"[CRITICAL] Metadata corruption detected: price={price}. FORCING RESET")
                                 raise ValueError("Metadata integrity check failed: invalid price")
-                            
-                            print(f"[SUCCESS] Metadata integrity OK (city={city}, price={price})")
                     except Exception as integrity_error:
-                        print(f"[ERROR] Metadata check failed: {integrity_error}")
-                        print(f"[RECOVERY] Resetting database for metadata fix...")
                         import shutil
                         import time
                         
@@ -96,12 +87,9 @@ class TravelPlanner:
                         raise ValueError("Database reset due to metadata corruption")
                 
                 if collection_count == 0:
-                    print(f"[WARNING] ChromaDB koleksiyonu boş! Veri yükleniyor...")
                     self._initialize_db_from_hotels_json()
             
             except Exception as collection_error:
-                print(f"[WARNING] ChromaDB koleksiyonu bulunamadı/corrupted: {collection_error}")
-                print(f"[INFO] Vektör veritabanı oluşturuluyor...")
                 self._initialize_db_from_hotels_json()
             
             self.embedder = MergenEmbedder()
@@ -111,11 +99,8 @@ class TravelPlanner:
             self._load_flight_data()
             self._load_transfer_data()
             
-            print(f"[SUCCESS] Seyahat Planlayıcı başarıyla başlatıldı")
-            
         except Exception as e:
             self.error_message = f"Seyahat Planlayıcı Başlatma Hatası: {str(e)}"
-            print(f"[ERROR] {self.error_message}")
             traceback.print_exc()
 
     def _initialize_db_from_hotels_json(self):
@@ -133,8 +118,6 @@ class TravelPlanner:
             # Dosya var mı kontrol et
             if not os.path.exists(self.hotels_json_path):
                 raise FileNotFoundError(f"hotels.json bulunamadı: {self.hotels_json_path}")
-            
-            print(f"[INFO] hotels.json okuluyor: {self.hotels_json_path}")
             
             if has_streamlit:
                 spinner_context = __import__('streamlit').spinner("🏨 Vektör veritabanı oluşturuluyor... Bu ilk sefer biraz zaman alabilir.")
@@ -159,21 +142,17 @@ class TravelPlanner:
                 else:
                     raise ValueError(f"Beklenmeyen hotels.json yapısı: {type(hotels_data)}")
                 
-                print(f"[INFO] {len(hotels_list)} otel bulundu")
-                
                 # STEP 1: Eski koleksiyonu sil
                 try:
                     self.client.delete_collection(name="hotels")
-                    print("[INFO] Eski koleksiyon silindi")
                 except Exception as e:
-                    print(f"[INFO] Koleksiyon sıfırlama (ilk kez normal): {e}")
+                    pass  # Normal - collection doesn't exist yet
                 
                 # Yeni koleksiyon oluştur
                 self.collection = self.client.get_or_create_collection(
                     name="hotels",
                     metadata={"hnsw:space": "cosine"}
                 )
-                print("[INFO] Yeni koleksiyon oluşturuldu")
                 
                 # Embedder'ı oluştur
                 embedder = MergenEmbedder()
@@ -196,12 +175,44 @@ class TravelPlanner:
                         hotel_name = hotel.get("name", hotel.get("hotel_name", "Unknown"))
                         hotel_desc = hotel.get("description", "")
                         
+                        # ============================================================
+                        # NESTED DICT EXTRACTION: City ve District
+                        # ============================================================
+                        city_value = None
+                        district_value = None
+                        
+                        # Try direct 'city' field first
+                        if 'city' in hotel and hotel['city']:
+                            city_value = hotel['city']
+                        # Try nested location.city structure
+                        elif 'location' in hotel and isinstance(hotel['location'], dict):
+                            if 'city' in hotel['location'] and hotel['location']['city']:
+                                city_value = hotel['location']['city']
+                        
+                        # Try direct 'district' field first
+                        if 'district' in hotel and hotel['district']:
+                            district_value = hotel['district']
+                        # Try nested location.district structure
+                        elif 'location' in hotel and isinstance(hotel['location'], dict):
+                            if 'district' in hotel['location'] and hotel['location']['district']:
+                                district_value = hotel['location']['district']
+                        
+                        # Set defaults if not found
+                        city_clean = str(city_value).strip().lower() if city_value else 'bilinmiyor'
+                        district_clean = str(district_value).strip().lower() if district_value else 'merkez'
+                        
+                        # Validate non-empty
+                        if not city_clean or city_clean == 'unknown city' or city_clean == 'unknown':
+                            city_clean = 'bilinmiyor'
+                        if not district_clean or district_clean == 'unknown district' or district_clean == 'unknown':
+                            district_clean = 'merkez'
+                        
                         # Metadata hazırla
                         amenities_list = hotel.get("amenities", [])
                         amenities_str = json.dumps(amenities_list) if amenities_list else "[]"
                         
                         # Extract price safely and convert to float
-                        price_raw = hotel.get("price", 0)
+                        price_raw = hotel.get("price_per_night", hotel.get("price", 0))
                         try:
                             price_float = float(price_raw) if price_raw else 0.0
                         except (ValueError, TypeError):
@@ -212,9 +223,9 @@ class TravelPlanner:
                         metadatas.append({
                             "uuid": unique_id,
                             "name": hotel_name,
-                            "city": hotel.get("city", "bilinmiyor").lower(),
-                            "district": hotel.get("district", "bilinmiyor").lower(),
-                            "location": f"{hotel.get('city', 'bilinmiyor')}, {hotel.get('district', 'bilinmiyor')}",
+                            "city": city_clean,  # NESTED DICT READY
+                            "district": district_clean,  # NESTED DICT READY
+                            "location": f"{city_clean}, {district_clean}",
                             "concept": hotel.get("concept", ""),
                             "price": price_float,  # FLOAT not STRING
                             "amenities": amenities_str
@@ -254,6 +265,17 @@ class TravelPlanner:
                         )
                         total_added += len(new_ids)
                         print(f"[INFO] Batch: {len(new_ids)} yeni otel eklendi (Toplam: {total_added}/{len(hotels_list)})")
+                        
+                        # ============================================================
+                        # DEBUG OUTPUT: Every 100 hotels
+                        # ============================================================
+                        if total_added % 100 == 0 or total_added == len(hotels_list):
+                            if new_metadatas:
+                                sample_meta = new_metadatas[-1]  # Last hotel in batch
+                                debug_name = sample_meta.get('name', 'N/A')
+                                debug_city = sample_meta.get('city', 'N/A')
+                                debug_price = sample_meta.get('price', 'N/A')
+                                print(f"[DEBUG] {total_added}/{len(hotels_list)} - Örnek Otel: {debug_name} - {debug_city} ({debug_price} TRY)")
                     else:
                         print(f"[INFO] Batch: Eklenecek yeni otel yok")
                 
@@ -808,16 +830,16 @@ class TravelPlanner:
         Transfer Filtreleme: Havalimanı + bölge bazlı uygun araçları bul
         
         KESIN KURALLAR:
-        1. Fuzzy Matching: Otel bölgesi, transfer to_area_name'de kısmen eşleşirse kabul et
-        2. Default Transfer: Bölge eşleşmezse, aynı havalimanından merkeze giden genel transferi getir
+        1. Fuzzy Matching (SequenceMatcher): Yazım farkları, 'Belek' vs 'BELEK', 'Çeşme' vs 'Çeşme Merkez' vb.
+        2. Similarity Score > 0.6: Lokasyon benzerlikleri kabul et
+        3. Default Transfer: Bölge eşleşmezse, aynı havalimanından merkeze giden genel transferi getir
+        4. Never Show "Dahil Değil": Eğer lokasyon uyuşuyorsa MUTLAKA bağla
         
         Returns: (transfer_object, reason_text)
         """
         try:
-            print(f"\n[TRANSFER] Searching transfers from {airport_code} to {hotel_city}")
-            
             matching_transfers = []
-            default_transfer = None  # Havalimanından merkeze giden genel transfer
+            default_transfer = None
             
             # Transfer dosyasının yapısını kontrol et
             if isinstance(self.transfers, dict) and "transfer_routes" in self.transfers:
@@ -825,47 +847,54 @@ class TravelPlanner:
             else:
                 routes = self.transfers if isinstance(self.transfers, list) else []
             
-            print(f"[TRANSFER] Total routes in DB: {len(routes)}")
+            hotel_city_lower = hotel_city.lower().strip()
             
             for transfer in routes:
                 route = transfer.get("route", {})
                 
                 # Havalimanı eşleştirmesi
                 if route.get("from_code") == airport_code:
-                    to_area_name = route.get("to_area_name", "").lower()
-                    hotel_city_lower = hotel_city.lower()
+                    to_area_name = route.get("to_area_name", "").lower().strip()
                     
-                    # FUZZY MATCHING: Kısmen eşleşme
-                    if hotel_city_lower in to_area_name or to_area_name in hotel_city_lower:
-                        print(f"[TRANSFER] MATCH: {to_area_name} <-> {hotel_city_lower}")
-                        matching_transfers.append(transfer)
+                    # ============================================================
+                    # FUZZY MATCHING: SequenceMatcher ile benzerlik taraması
+                    # ============================================================
+                    similarity_score = SequenceMatcher(None, hotel_city_lower, to_area_name).ratio()
+                    
+                    # KURAL: Similarity > 0.6 veya partial substring match
+                    is_fuzzy_match = (
+                        similarity_score > 0.6 or  # 'Belek' vs 'BELEK' gibi
+                        hotel_city_lower in to_area_name or  # 'Çeşme' in 'Çeşme Merkez'
+                        to_area_name in hotel_city_lower  # Tersi
+                    )
+                    
+                    if is_fuzzy_match:
+                        matching_transfers.append((transfer, similarity_score))
                     
                     # Default transfer (merkez/şehir merkezi hedefi)
                     if not default_transfer and ("merkez" in to_area_name or "center" in to_area_name):
-                        print(f"[TRANSFER] Default transfer candidate: {to_area_name}")
                         default_transfer = transfer
             
             selected_transfer = None
             reason = ""
             
-            # Önce specific match'i dene
+            # Önce fuzzy match'i dene (similarity score'a göre sırala)
             if matching_transfers:
+                # Similarity score'a göre sırala (en yüksek benzerlik önce)
+                matching_transfers.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
+                
                 # Travel style'a göre filtrele
                 if travel_style == "lüks":
-                    # VIP araç ara
                     vip_transfers = [t for t in matching_transfers 
-                                    if "VIP" in t.get("vehicle_info", {}).get("category", "")]
-                    matching_transfers = vip_transfers if vip_transfers else matching_transfers
+                                    if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
+                    if vip_transfers:
+                        matching_transfers = vip_transfers
                 
-                # Fiyata göre sırala ve en uygununu seç
-                matching_transfers.sort(key=lambda x: float(x.get("total_price", 0)))
-                selected_transfer = matching_transfers[0]
-                print(f"[TRANSFER] Selected specific match: {selected_transfer.get('service_code')}")
+                selected_transfer = matching_transfers[0][0]  # Tuple'den çıkar
             
-            # Eğer specific match yoksa, default transfer'i kullan
+            # Eğer fuzzy match yoksa, default transfer'i kullan
             elif default_transfer:
                 selected_transfer = default_transfer
-                print(f"[TRANSFER] Using default transfer: {selected_transfer.get('service_code')}")
             
             if selected_transfer:
                 vehicle_type = selected_transfer.get("vehicle_info", {}).get("category", "")
@@ -885,14 +914,11 @@ class TravelPlanner:
                     "price": price
                 }
                 
-                print(f"[TRANSFER SUCCESS] {vehicle_name} - ₺{price}")
                 return (transfer_obj, reason)
             
-            print(f"[TRANSFER] No suitable transfer found")
             return (None, "")
             
         except Exception as e:
-            print(f"[ERROR] Transfer filtreleme hatası: {e}")
             import traceback
             traceback.print_exc()
             return (None, "")
@@ -938,48 +964,64 @@ class TravelPlanner:
                 transfer_section = f"🚗 {transfer_info} - ₺{transfer_price:,.0f}\n"
             
             prompt = f"""
-            Kullanıcının Sorgusu: "{user_query}"
-            
-            Seyahat Stilü: {travel_style}
-            Kullanıcı Tercihleri: {', '.join(preferences)}
-            
             SEÇİLEN PAKET:
-            🏨 Otel: {hotel['name']} ({hotel['city']})
-                - Konsept: {hotel.get('concept', 'N/A')}
-                - Özellikleri: {hotel_amenities}
-                - Fiyat: ₺{hotel['price']:,.0f}
-            
+            🏨 {hotel['name']} ({hotel['city']}) - ₺{hotel['price']:,.0f}/gece
+            Ameniteler: {hotel_amenities}
             {flight_section}{transfer_section}
-            GÖREV:
-            Kullanıcının bu paketi neden mükemmel olduğunu anlatan, samimi ve ikna edici bir '✨ Seyahat Planınız' özeti yaz.
             
-            Yapı:
-            - Başlık: "✨ Seyahat Planınız"
-            - Otel seçimi: Bu oteli neden seçtiğim (tercihlerle bağlantı)
-            - Uçuş seçimi: Bu uçuşu neden seçtiğim (style + koşullar)
-            - Transfer seçimi: Bu transferi neden seçtiğim (konfor + süre)
-            - Kapanış: Heyecan verici cümle
+            GÖREV - ALTTIN ORAN (Akıcı Pazarlama Özeti):
             
-            KURALLAR:
-            - Maksimum 8-10 cümle
-            - Türkçe yaz
-            - Emojiler kullan (✈️ 🚗 🏨 etc.)
-            - Kişiselleştirilmiş ve sıcak ton
-            - Asla giriş/sonuç yazma, sadece özeti ver
+            ⚠️ **KATYON KURALLAR:**
             
-            Yanıt:
+            1. **FORMAT**: Liste formatını bırak, tek akıcı paragraf yaz. 2-3 cümle, maksimum 30-40 kelime.
+            
+            2. **PAZARLAMA ZEKASı**: Teknik veriler (sabah uçuşu, bebek koltuğu, butik otel) ile pazarlama dilini harmanla.
+               - KÖTÜ: 'Ekonomik uçuş, butik otel.'
+               - İYİ: 'Sabah uçuşuyla güne erken başlarken, bebeğiniz için hazırladığımız VIP transfer ve sessiz butik otel tercihimizle konforun tadını çıkaracaksınız.'
+            
+            3. **DİL**: Sadece temiz, ikna edici İstanbul Türkçesi. Yabancı karakter KESINLIKLE YASAKLI:
+               - ❌ İngilizce: morning, hotel, available, thought
+               - ❌ Çince: 安全, 设计
+               - ❌ Portekizce: bem-vindo
+               - ❌ Diğer: szy, vytváracak
+            
+            4. **GEREKSIZ KALIPLAR YASAKLI**: 'Hazır mısınız?', 'Bu seyahat için hazırladık' vb. Doğrudan paketin değerine odaklan.
+            
+            5. **HALLUCINATION YASAKLI**: Veri dosyasında olmayan özellik/hizmet yazma.
+            
+            6. **ÖRNEK ÇIKTI** (İyi yazım):
+            'Bebek koltuğu ve sabah uçuşuyla çocuğunuz rahat edecek, sessiz butik otelimiz de huzurlu bir konaklamaya davet ediyor. VIP transfer servisiyle de otelden kapıdan kapıya sakin bir yolculuk sağlıyoruz.'
+            
+            **ÇIKTI**: Sadece pazarlama paragrafını yaz. Başka bir şey yazma.
             """
             
             completion = self.llm.client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model=self.llm.model,
             )
+            summary = completion.choices[0].message.content.strip()
             
-            return completion.choices[0].message.content
+            # Yabancı karakter kontrolü (İngilizce, Çince, Portekizce kelimeleri)
+            forbidden_patterns = ['morning', 'hotel', 'available', '安全', '设计', 'bem-vindo', 'szy', 'vytváracak', 'thought', 'phürsiniz', 'setting']
             
+            has_forbidden = any(pattern.lower() in summary.lower() for pattern in forbidden_patterns)
+            
+            # Kelime sayısı kontrolü (30-40 kelime hedefi, max 45)
+            word_count = len(summary.split())
+            
+            if has_forbidden or word_count > 50:
+                # Hata varsa fallback paragraf kullan
+                amenities_text = hotel_amenities.split(", ")[0] if hotel_amenities else "ekstra hizmetler"
+                summary = f"{hotel['name']}, {amenities_text} ve konforlu bir ortamda, tercihlerinize uyumlu bir paket sunar. Uçuş ve transfer hizmetleriyle tam kaynaklanmış bir tatil deneyimi yaşayacaksınız."
+            
+            return summary
+        
         except Exception as e:
-            print(f"[ERROR] Akıllı özet oluşturma hatası: {e}")
-            return "Seyahat paketiniz hazır! 🎉"
+            # Fallback: Pazarlama paragrafı
+            hotel_name = hotel.get('name', 'Tesis')
+            hotel_city = hotel.get('city', '')
+            amenities_first = hotel.get('amenities', ['ekstra hizmetler'])[0] if hotel.get('amenities') else "ekstra hizmetler"
+            return f"{hotel_name}, {amenities_first} ve konforlu bir ortamda tercihlerinize uyumlu bir paket sunar. Uçuş ve transfer hizmetleriyle tam kaynaklanmış bir tatil deneyimi yaşayacaksınız."
 
     def search(self, query: str, top_k: int = 3):
         """

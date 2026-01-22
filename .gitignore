@@ -43,6 +43,7 @@ env/
 
 # ChromaDB ve Vektör Veritabanı (Sunucuda oluşturulacak)
 data/chroma_db/
+data/chroma_db_v2/
 *.db
 *.sqlite
 *.sqlite3

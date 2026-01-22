@@ -53,7 +53,6 @@ class MergenLLM:
             )
             return json.loads(completion.choices[0].message.content)
         except Exception as e:
-            print(f"LLM Hatası: {e}")
             return {}
 
     def parse_intent(self, user_sentence: str) -> dict:
@@ -98,7 +97,6 @@ class MergenLLM:
             result = json.loads(completion.choices[0].message.content)
             return result
         except Exception as e:
-            print(f"Intent Parsing Hatası: {e}")
             return {"destination_iata": "", "needs_flight": False, "needs_transfer": False}
 
     def translate_code(self, code: str) -> str:
@@ -198,18 +196,121 @@ class MergenLLM:
         {flight_text}
         {transfer_text}
 
+        GÖREV - ALTTIN ORAN (Akıcı Pazarlama Özeti):
+        
+        ⚠️ **KATYON KURALLAR (BU KURALLAR KATIYDIR - HİÇ ISTISNAI DURUM YOK):**
+        
+        1. **FORMAT**: Liste formatını bırak, tek akıcı paragraf yaz. 2-3 cümle, maksimum 30-40 kelime.
+        
+        2. **PAZARLAMA ZEKASı**: Teknik veriler (sabah uçuşu, bebek koltuğu, butik otel) ile pazarlama dilini harmanla.
+           - KÖTÜ: 'Ekonomik uçuş, butik otel.'
+           - İYİ: 'Sabah uçuşuyla güne erken başlarken, bebeğiniz için hazırladığımız VIP transfer ve sessiz butik otel tercihimizle konforun tadını çıkaracaksınız.'
+        
+        3. **DİL**: Sadece temiz, ikna edici İstanbul Türkçesi. Yabancı karakter KESINLIKLE YASAKLI:
+           - ❌ İngilizce: morning, hotel, available, thought
+           - ❌ Çince: 安全, 设计
+           - ❌ Portekizce: bem-vindo
+           - ❌ Diğer: szy, vytváracak
+        
+        4. **GEREKSIZ KALIPLAR YASAKLI**: 'Hazır mısınız?', 'Bu seyahat için hazırladık' vb. Doğrudan paketin değerine odaklan.
+        
+        5. **HALLUCINATION YASAKLI**: Olmayan hizmet/özellik yazma. Sadece gerçek veriler.
+        
+        6. **ÖRNEK ÇIKTI** (İyi yazım):
+        'Bebek koltuğu ve sabah uçuşuyla çocuğunuz rahat edecek, sessiz butik otelimiz de huzurlu bir konaklamaya davet ediyor. VIP transfer servisiyle de otelden kapıdan kapıya sakin bir yolculuk sağlıyoruz.'
+        
+        **ÇIKTI**: Sadece pazarlama paragrafını yaz. Başka bir şey yazma.
+        """
+        
+        try:
+            completion = self.client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=self.model,
+            )
+            response = completion.choices[0].message.content.strip()
+            
+            # Yabancı karakter kontrolü
+            forbidden_patterns = ['morning', 'hotel', 'available', '安全', '设计', 'bem-vindo', 'szy', 'vytváracak', 'thought', 'phürsiniz', 'setting']
+            has_forbidden = any(pattern.lower() in response.lower() for pattern in forbidden_patterns)
+            
+            # Kelime sayısı kontrolü (30-40 hedefi, max 45)
+            word_count = len(response.split())
+            
+            if has_forbidden or word_count > 50:
+                # Fallback: Pazarlama paragrafı
+                return f"{hotel_name}, {hotel.get('region', '')} bölgesinde konforlu bir ortamda tercihlerinize uyumlu bir paket sunar. Seçilen uçuş ve transfer hizmetleriyle tam kaynaklanmış bir tatil deneyimi yaşayacaksınız."
+            
+            return response
+        except Exception as e:
+            # Fallback: Pazarlama paragrafı
+            return f"{hotel_name}, {hotel.get('region', '')} bölgesinde konforlu bir ortamda tercihlerinize uyumlu bir paket sunar. Seçilen uçuş ve transfer hizmetleriyle tam kaynaklanmış bir tatil deneyimi yaşayacaksınız."
+
+    def generate_package_response_old(self, hotel: dict, flight: dict = None, transfer: dict = None) -> str:
+        # Veri hazırlama
+        hotel_name = hotel.get("name", "Otel")
+        hotel_city = hotel.get("city", "")
+        hotel_price = hotel.get("price", 0)
+        
+        # GERÇEK Uçuş bilgisi - veri varsa SADECE gerçek bilgi, yoksa açıkça söyle
+        flight_text = ""
+        if flight and isinstance(flight, dict) and flight.get("flight_no"):
+            # Sadece gerçek bilgiler - zaman ve havayolu
+            departure_time = flight.get("departure", "")[:16] if flight.get("departure") else ""
+            carrier_code = flight.get("carrier", "")
+            carrier_name = self.translate_code(carrier_code)
+            price = flight.get("price", 0)
+            flight_text = f"\n✈️ **Uçuş**: {carrier_name} - Saat: {departure_time} - ₺{price:,.0f}"
+        elif not flight:
+            # Açıkça söyle ki uçuş bulunamadı
+            flight_text = "\n✈️ **Uçuş**: Maalesef uygun uçuş bulunamadı"
+        
+        # GERÇEK Transfer bilgisi - veri varsa SADECE gerçek bilgi, yoksa açıkça söyle
+        transfer_text = ""
+        if transfer and isinstance(transfer, dict) and transfer.get("vehicle_category"):
+            # Sadece gerçek bilgiler - araç tipi ve durasyonu
+            vehicle_type = self.translate_code(transfer.get("vehicle_category", ""))
+            duration = transfer.get("duration", 0)
+            price = transfer.get("price", 0)
+            transfer_text = f"\n🚗 **Transfer**: {vehicle_type} - {duration} dakika - ₺{price:,.0f}"
+        elif not transfer:
+            # Açıkça söyle ki transfer bulunamadı
+            transfer_text = "\n🚗 **Transfer**: Maalesef uygun transfer bulunamadı"
+        
+        # LLM'e SADECE gerçek veriler ile prompt ver
+        prompt = f"""
+        Aşağıdaki seyahat paketi bilgilerini kullanarak, sıcak ve samimi bir sunum yaz:
+
+        **PAKET:**
+        - Otel: {hotel_name} ({hotel_city}) - ₺{hotel_price:,.0f}/gece
+        {flight_text}
+        {transfer_text}
+
         GÖREV:
         Paketi kullanıcıya sunumunu yap. Sıcak, kişisel ve samimi bir ton kullan.
         
-        KESIN KURALLAR (BU KURALLAR KATIDIR):
-        1. Eğer metinde "Maalesef uygun" yazıyorsa, o hizmete söyle: "İlk defa kullanıyorsanız, bunu hayal etmeyeceksiniz" gibi olumsuz hayal YAZMA
-        2. Sadece metnin içinde gördüğün gerçek verileri kullan - ASLA UYDURMA
-        3. ASLA "seçtim", "ayarladım", "buldum" gibi eylemler yazma - bunlar yalan olur
-        4. Basit, gerçekçi, samimi yaz
-        5. En fazla 3-4 cümle
-        6. Türkçe yaz
+        ⚠️ **KESIN KURALLAR (BU KURALLAR KATIDIR - HİÇ ISTISNAI DURUM YOK):**
         
-        Yanıtı SADECE sunum metni olarak ver, başka şey yazma.
+        1. **Yabancı Karakter YOK**: Asla Çinli, Arapça, Korece veya başka dil karakterleri yazma. Sadece Türkçe.
+           - YANLIŞ: '安全liği', 'saleçtion', 'phürsiniz', 'selecion'
+           - DOĞRU: 'güvenliği', 'seçim', 'vursiniz' (ya da tam sözcük)
+        
+        2. **Kelime Kayması YOK**: Kelimeler tamamlanmamış veya karışık yazılmış olmasın.
+           - YANLIŞ: 'pakettir ama şekilde' (eksik konuşma)
+           - DOĞRU: 'paketinize tam uygun' (tamamlanmış)
+        
+        3. **Gerçek Veriler SADECE**: Eğer metinde "Maalesef uygun" yazıyorsa, o hizmeti açıkça ret et. Asla olumsuz hayal yazma.
+           - YANLIŞ: "Transfer yok ama sonra ayarlarız"
+           - DOĞRU: "Maalesef uygun transfer bulunamadı"
+        
+        4. **Asla Uydurma**: Sadece metnin içinde gördüğün veriler ile yaz. Ekstra hizmet, indirim, bonus vs. yazma.
+        
+        5. **Samimi Ton**: Profesyonel ama sıcak. Emoji'leri dengeli kullan (her cümle değil, önemli yerlerde).
+           - DOĞRU: "Paketi hazırladım ✅. İzmir'de harika bir konaklama sizi bekliyor 🏨"
+           - YANLIŞ: "Paketi hazırladım 🎉🎊 İzmir'de 🏖️ konaklama 🏨 sizi bekliyor 😊✨"
+        
+        6. **Uzunluk**: En fazla 3-4 cümle, profesyonel ve özlü olsun.
+        
+        **ÇIKTI**: Sadece sunumu yaz, başka bir şey yazma. Girişe, sonuca, açıklamaya yer yok.
         """
         
         try:
@@ -218,10 +319,8 @@ class MergenLLM:
                 model=self.model,
             )
             response = completion.choices[0].message.content
-            print(f"[PACKAGE_RESPONSE] Generated: {response[:100]}...")
             return response
         except Exception as e:
-            print(f"Paket Sunumu Hatası: {e}")
             # Fallback: Sadece gerçek veriler
             return f"{hotel_name} ({hotel_city}) - ₺{hotel_price:,.0f}/gece{flight_text}{transfer_text}"
 
@@ -344,7 +443,6 @@ class MergenLLM:
             return result
             
         except Exception as e:
-            print(f"Travel Params Extraction Hatası: {e}")
             # Fallback değerleri döndür
             return {
                 "intent": {"flight": False, "transfer": False, "hotel": True},

@@ -903,6 +903,51 @@
       "total_price": 1200.0,
       "currency": "TRY",
       "hotel_coverage": 28
+    },
+    {
+      "service_code": "TR-ANT-VIP-01",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "BELEK",
+        "to_area_name": "Belek",
+        "estimated_duration": 40
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 1850.0,
+      "currency": "TRY",
+      "hotel_coverage": 90
+    },
+    {
+      "service_code": "TR-ANT-SHTL-02",
+      "operator_id": "CITY_BUS",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "KONYAALTI",
+        "to_area_name": "Konyaaltı",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "SHUTTLE_BUS",
+        "max_pax": 14,
+        "features": [
+          "CLIMATE_CONTROL",
+          "STANDARD_LUGGAGE"
+        ]
+      },
+      "total_price": 350.0,
+      "currency": "TRY",
+      "hotel_coverage": 75
     }
   ]
 }
