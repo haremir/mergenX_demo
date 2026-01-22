@@ -2,7 +2,7 @@
   "metadata": {
     "generated_for": "MergenX Transfer Operations",
     "total_hotels": 600,
-    "total_flights": 60,
+    "total_flights": 73,
     "generation_date": "2026-01-19",
     "season": "Summer 2026"
   },
@@ -1003,8 +1003,12 @@
       },
       "baggage": "1PC x 20KG",
       "transfer_zones": [
+        "Side",
+        "Alanya",
+        "Lara",
         "Belek",
-        "Lara"
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1027,7 +1031,12 @@
       "baggage": "1PC x 20KG",
       "transfer_zones": [
         "Konyaaltı",
-        "Lara"
+        "Side",
+        "Alanya",
+        "Lara",
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1049,8 +1058,12 @@
       },
       "baggage": "1PC x 15KG",
       "transfer_zones": [
+        "Konyaaltı",
+        "Side",
+        "Alanya",
         "Belek",
-        "Konyaaltı"
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1072,8 +1085,12 @@
       },
       "baggage": "1PC x 20KG",
       "transfer_zones": [
+        "Side",
+        "Alanya",
         "Lara",
-        "Belek"
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1096,7 +1113,11 @@
       "baggage": "1PC x 15KG",
       "transfer_zones": [
         "Konyaaltı",
-        "Belek"
+        "Side",
+        "Alanya",
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1118,8 +1139,13 @@
       },
       "baggage": "1PC x 20KG",
       "transfer_zones": [
+        "Konyaaltı",
+        "Side",
+        "Alanya",
         "Lara",
-        "Konyaaltı"
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1141,8 +1167,12 @@
       },
       "baggage": "1PC x 15KG",
       "transfer_zones": [
+        "Side",
+        "Alanya",
+        "Lara",
         "Belek",
-        "Lara"
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1165,7 +1195,11 @@
       "baggage": "1PC x 20KG",
       "transfer_zones": [
         "Konyaaltı",
-        "Belek"
+        "Side",
+        "Alanya",
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1187,8 +1221,12 @@
       },
       "baggage": "1PC x 20KG",
       "transfer_zones": [
+        "Side",
+        "Alanya",
         "Lara",
-        "Belek"
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1211,7 +1249,12 @@
       "baggage": "1PC x 15KG",
       "transfer_zones": [
         "Konyaaltı",
-        "Lara"
+        "Side",
+        "Alanya",
+        "Lara",
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1372,7 +1415,11 @@
       "baggage": "1PC x 20KG",
       "transfer_zones": [
         "Konyaaltı",
-        "Belek"
+        "Side",
+        "Alanya",
+        "Belek",
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1394,8 +1441,13 @@
       },
       "baggage": "1PC x 15KG",
       "transfer_zones": [
+        "Side",
+        "Alanya",
+        "Lara",
+        "Belek",
         "Muratpaşa",
-        "Lara"
+        "Kaş",
+        "Kemer"
       ]
     },
     {
@@ -1442,6 +1494,318 @@
       "transfer_zones": [
         "Alaçatı",
         "Çeşme"
+      ]
+    },
+    {
+      "flight_id": "TK2200-20260615",
+      "carrier": "TK",
+      "flight_no": "2200",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T07:00:00:00",
+        "arrival": "2026-06-15T08:15:00"
+      },
+      "pricing": {
+        "amount": 2850.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Side",
+        "Belek",
+        "Kaş",
+        "Kemer"
+      ]
+    },
+    {
+      "flight_id": "TK2201-20260615",
+      "carrier": "TK",
+      "flight_no": "2201",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T19:00:00:00",
+        "arrival": "2026-06-15T20:15:00"
+      },
+      "pricing": {
+        "amount": 2850.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Side",
+        "Belek",
+        "Kaş",
+        "Kemer"
+      ]
+    },
+    {
+      "flight_id": "TK2202-20260615",
+      "carrier": "TK",
+      "flight_no": "2202",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T07:00:00:00",
+        "arrival": "2026-06-15T08:15:00"
+      },
+      "pricing": {
+        "amount": 2950.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Side",
+        "Belek",
+        "Kaş",
+        "Kemer"
+      ]
+    },
+    {
+      "flight_id": "TK2203-20260615",
+      "carrier": "TK",
+      "flight_no": "2203",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T19:00:00:00",
+        "arrival": "2026-06-15T20:15:00"
+      },
+      "pricing": {
+        "amount": 2950.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Side",
+        "Belek",
+        "Kaş",
+        "Kemer"
+      ]
+    },
+    {
+      "flight_id": "TK2204-20260615",
+      "carrier": "PC",
+      "flight_no": "2204",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-16T07:00:00:00",
+        "arrival": "2026-06-16T08:15:00"
+      },
+      "pricing": {
+        "amount": 2380.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Alanya",
+        "Side",
+        "Belek",
+        "Kaş",
+        "Kemer"
+      ]
+    },
+    {
+      "flight_id": "TK2205-20260615",
+      "carrier": "PC",
+      "flight_no": "2205",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-16T19:00:00:00",
+        "arrival": "2026-06-16T20:15:00"
+      },
+      "pricing": {
+        "amount": 2380.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Alanya",
+        "Side",
+        "Belek",
+        "Kaş",
+        "Kemer"
+      ]
+    },
+    {
+      "flight_id": "TK2200-20260615",
+      "carrier": "TK",
+      "flight_no": "2200",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T07:00:00:00",
+        "arrival": "2026-06-15T08:15:00"
+      },
+      "pricing": {
+        "amount": 2850.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Kemer",
+        "Side",
+        "Kaş",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "TK2201-20260615",
+      "carrier": "TK",
+      "flight_no": "2201",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T19:00:00:00",
+        "arrival": "2026-06-15T20:15:00"
+      },
+      "pricing": {
+        "amount": 2850.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Kemer",
+        "Side",
+        "Kaş",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "TK2202-20260615",
+      "carrier": "TK",
+      "flight_no": "2202",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T07:00:00:00",
+        "arrival": "2026-06-15T08:15:00"
+      },
+      "pricing": {
+        "amount": 2950.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Kemer",
+        "Side",
+        "Kaş",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "TK2203-20260615",
+      "carrier": "TK",
+      "flight_no": "2203",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "AYT",
+        "departure": "2026-06-15T19:00:00:00",
+        "arrival": "2026-06-15T20:15:00"
+      },
+      "pricing": {
+        "amount": 2950.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alanya",
+        "Kemer",
+        "Side",
+        "Kaş",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "TK2204-20260615",
+      "carrier": "PC",
+      "flight_no": "2204",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-16T07:00:00:00",
+        "arrival": "2026-06-16T08:15:00"
+      },
+      "pricing": {
+        "amount": 2380.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Alanya",
+        "Kemer",
+        "Side",
+        "Kaş",
+        "Belek"
+      ]
+    },
+    {
+      "flight_id": "TK2205-20260615",
+      "carrier": "PC",
+      "flight_no": "2205",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "SAW",
+        "destination": "AYT",
+        "departure": "2026-06-16T19:00:00:00",
+        "arrival": "2026-06-16T20:15:00"
+      },
+      "pricing": {
+        "amount": 2380.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 15KG",
+      "transfer_zones": [
+        "Alanya",
+        "Kemer",
+        "Side",
+        "Kaş",
+        "Belek"
       ]
     }
   ],

@@ -992,6 +992,98 @@
       "total_price": 1200.0,
       "currency": "TRY",
       "hotel_coverage": 85
+    },
+    {
+      "service_code": "TR-ANT-VIP-1000",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "ALANYA",
+        "to_area_name": "Alanya",
+        "estimated_duration": 120
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 2800,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-ANT-ECO-1000",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "ALANYA",
+        "to_area_name": "Alanya",
+        "estimated_duration": 120
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1800,
+      "currency": "TRY",
+      "hotel_coverage": 15
+    },
+    {
+      "service_code": "TR-ANT-VIP-1001",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "KEMER",
+        "to_area_name": "Kemer",
+        "estimated_duration": 50
+      },
+      "vehicle_info": {
+        "category": "VAN_VIP",
+        "max_pax": 6,
+        "features": [
+          "WIFI",
+          "BABY_SEAT_AVAIL",
+          "LEATHER_SEATS",
+          "REFRESHMENTS"
+        ]
+      },
+      "total_price": 1800,
+      "currency": "TRY",
+      "hotel_coverage": 18
+    },
+    {
+      "service_code": "TR-ANT-ECO-1001",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "AYT",
+        "from_name": "Antalya Havalimanı",
+        "to_area_code": "KEMER",
+        "to_area_name": "Kemer",
+        "estimated_duration": 50
+      },
+      "vehicle_info": {
+        "category": "VAN_ECONOMY",
+        "max_pax": 8,
+        "features": [
+          "AC",
+          "LUGGAGE_SPACE"
+        ]
+      },
+      "total_price": 1100,
+      "currency": "TRY",
+      "hotel_coverage": 18
     }
   ]
 }
