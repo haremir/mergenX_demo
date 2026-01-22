@@ -172,9 +172,18 @@ if engine:
                 st.divider()
                 st.markdown("## 🤖 MergenX Seyahat Planı")
                 
+                # Fallback uyarısı varsa göster (ilk kez)
+                if results and results[0].get("fallback_warning"):
+                    st.warning(results[0].get("fallback_warning"))
+                    st.divider()
+                
                 # Paket Kartları - Revize Görünüm
                 for idx, hotel in enumerate(results):
                     with st.container(border=True):
+                        # Şehir uyuşmazlığı hatası varsa göster
+                        if hotel.get("error"):
+                            st.error(f"⚠️ {hotel.get('error')}")
+                        
                         # ============================================================
                         # ÜSTTE: AKILLI ÖZET (LLM'in Önerisi)
                         # ============================================================

@@ -391,10 +391,14 @@ class TravelPlanner:
             
             # Temizlenmiş preferences'ı sorgu olarak kullan (destination_city'yi ayrı parameter olarak geç)
             search_query = f"{' '.join(clean_preferences)}" if clean_preferences else destination_city
-            hotels = self._search_hotels_by_preferences(search_query, destination_city, top_k)
+            hotels, primary_city, fallback_city = self._search_hotels_by_preferences(search_query, destination_city, top_k)
             
+            # Fallback kontrolü: Kullanıcıyı bilgilendirmek için fallback_city'i kaydet
+            warning_message = None
             if not hotels:
                 return ([], f"{destination_city} için uygun otel bulunamadı")
+            elif fallback_city:
+                warning_message = f"⚠️ Üzgünüm, {destination_city}'da istediğiniz konseptte bir yer bulamadım. Bunun yerine {fallback_city}'deki önerilerim:"
             
             # ============================================================
             # ADIM 3: PAKETLEME VE FİLTRELEME
@@ -407,12 +411,16 @@ class TravelPlanner:
                     # Uçuş filtrele
                     flight = None
                     flight_reason = ""
+                    flight_error = None
                     if intent.get("flight"):
                         flight, flight_reason = self._filter_flights(
                             origin_iata=origin_iata,
                             destination_iata=destination_iata,
                             travel_style=travel_style
                         )
+                        # Flight-Hotel şehir uyuşmazlığı kontrolü
+                        if not flight and destination_iata != "IST":  # IST dışı destinasyonlar kritik
+                            flight_error = f"Şehir uyuşmazlığı: {destination_city} için uygun uçuş bulunamadı"
                     
                     # Transfer filtrele
                     transfer = None
@@ -420,7 +428,7 @@ class TravelPlanner:
                     if intent.get("transfer"):
                         transfer, transfer_reason = self._filter_transfers(
                             airport_code=destination_iata,
-                            hotel=hotel,  # ✅ Otel objesinin tamamını geç (district bilgisini içeriyor)
+                            hotel=hotel,
                             travel_style=travel_style
                         )
                     
@@ -442,7 +450,8 @@ class TravelPlanner:
                             "preferences": preferences,
                             "destination_iata": destination_iata,
                             "origin_iata": origin_iata
-                        }
+                        },
+                        "error": flight_error  # ⚠️ Şehir uyuşmazlığı uyarısı
                     }
                     
                     # ============================================================
@@ -526,6 +535,11 @@ class TravelPlanner:
                     # Bu oteli atla, sonraki otele geç
                     continue
             
+            # Fallback uyarısı varsa paketlere ekle
+            if warning_message:
+                for package in packages:
+                    package["fallback_warning"] = warning_message
+            
             return (packages, None)
             
         except Exception as e:
@@ -587,38 +601,40 @@ class TravelPlanner:
         
         return cleaned
 
-    def _search_hotels_by_preferences(self, search_query: str, destination_city: str, top_k: int = 3) -> list:
+    def _search_hotels_by_preferences(self, search_query: str, destination_city: str, top_k: int = 3) -> tuple:
         """
-        Otel Arama: Preferences'ı kullanarak ChromaDB'de vektör araması yap
+        Otel Arama: City Lock + Smart Fallback
         
         KESIN KURALLAR:
-        1. Türkçe karakter normalizasyonu: İ->i, I->ı, lowercase
-        2. Partial matching: Tam eşleşme yerine içeriyor mu kontrol
-        3. Fallback: Vektör araması boşsa, sadece şehre göre ilk 5 oteli getir
+        1. City Lock: Kullanıcı şehir belirttiyse YALNIZCA o şehirde ara
+        2. Exact City Match: Partial matching yerine kesin city eşleştirmesi
+        3. Smart Fallback: O şehirde otel yoksa, başka şehirden öner
+        
+        Returns: (hotels_list, primary_city, fallback_city)
         """
         try:
             # 1. ŞEHİR NORMALIZASYONU
             normalized_city = self._normalize_city_name(destination_city)
+            fallback_city = None
             
             # Sorguyu vektore cevir
             query_vector = self.embedder.create_embeddings([search_query])[0].tolist()
 
-            # 2. VEKTÖR ARAMASI YAP
-            # Tüm otelleri al ve manual filtrele (flexible matching için)
+            # 2. VEKTÖR ARAMASI YAP (City Lock: YALNIZCA destination_city'de ara)
             all_results = self.collection.query(
                 query_embeddings=[query_vector],
-                n_results=top_k * 3,  # Daha fazla getir, sonra filtrele
+                n_results=top_k * 5,  # Tercih seçimini arttır
                 include=['documents', 'metadatas']
             )
 
-            # Sonuçları düzenle ve şehre göre filtrele
+            # Sonuçları düzenle ve ŞEHRİ KESIN EŞLEŞTIRME ile filtrele (City Lock)
             matched_hotels = []
             for i in range(len(all_results['ids'][0])):
                 db_city = all_results['metadatas'][0][i].get('city', '')
                 normalized_db_city = self._normalize_city_name(db_city)
                 
-                # PARTIAL MATCH: normalized_city in normalized_db_city
-                if normalized_city in normalized_db_city or normalized_db_city in normalized_city:
+                # CITY LOCK: Kesin eşleştirme - sadece destination_city'yle tamamen eşleşenler
+                if normalized_city == normalized_db_city:
                     amenities_data = all_results['metadatas'][0][i].get('amenities', '[]')
                     try:
                         amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
@@ -642,113 +658,65 @@ class TravelPlanner:
                     if len(matched_hotels) >= top_k:
                         break
             
-            # 3. FALLBACK: Vektör araması sonuç vermezse, sadece şehre göre al
+            # 3. FALLBACK: Talep edilen şehirde otel yoksa, başka şehirden öner
             if not matched_hotels:
+                print(f"[CITY LOCK] No hotels in {destination_city}, trying alternatives...")
                 try:
                     all_hotels = self.collection.get(limit=1000, include=['documents', 'metadatas'])
                     
+                    # Tüm şehirleri ve otellerini topla
+                    cities_hotels = {}
                     for i, metadata in enumerate(all_hotels['metadatas']):
                         db_city = metadata.get('city', '')
-                        normalized_db_city = self._normalize_city_name(db_city)
-                        
-                        if normalized_city in normalized_db_city or normalized_db_city in normalized_city:
-                            amenities_data = metadata.get('amenities', '[]')
-                            try:
-                                amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
-                            except:
-                                amenities_list = []
-                            
-                            # SYNC: Price and city fetching using standardized metadata field names
-                            price_value = metadata.get('price', 0.0)
-                            price = float(price_value) if price_value else 0.0
-                            hotel_name = metadata.get('name', 'Unknown')
-                            hotel_city = metadata.get('city', '')
-                            
-                            matched_hotels.append({
-                                "id": all_hotels['ids'][i],
-                                "name": hotel_name,
-                                "city": hotel_city,
-                                "concept": metadata.get('concept', ''),
-                                "price": price,
-                                "description": all_hotels['documents'][i],
-                                "amenities": amenities_list
-                            })
-                            print(f"[FALLBACK] Added: {hotel_name} in {hotel_city}")
-                            
-                            if len(matched_hotels) >= top_k:
-                                break
+                        if db_city not in cities_hotels:
+                            cities_hotels[db_city] = []
+                        cities_hotels[db_city].append((i, metadata))
+                    
+                    # Alternatif şehirlerden otel seç (destination_city hariç)
+                    for db_city, hotels_in_city in cities_hotels.items():
+                        if db_city.lower() != destination_city.lower() and not fallback_city:
+                            # Bu şehirden otel al
+                            for i, metadata in hotels_in_city[:top_k]:
+                                amenities_data = metadata.get('amenities', '[]')
+                                try:
+                                    amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
+                                except:
+                                    amenities_list = []
+                                
+                                price_value = metadata.get('price', 0.0)
+                                price = float(price_value) if price_value else 0.0
+                                hotel_name = metadata.get('name', 'Unknown')
+                                hotel_city = metadata.get('city', '')
+                                
+                                matched_hotels.append({
+                                    "id": all_hotels['ids'][i],
+                                    "name": hotel_name,
+                                    "city": hotel_city,
+                                    "concept": metadata.get('concept', ''),
+                                    "price": price,
+                                    "description": all_hotels['documents'][i],
+                                    "amenities": amenities_list
+                                })
+                                print(f"[FALLBACK] Using alternative city: {hotel_city}")
+                                fallback_city = db_city
+                                
+                                if len(matched_hotels) >= top_k:
+                                    break
+                        if fallback_city:
+                            break
                     
                     if matched_hotels:
-                        print(f"[FALLBACK SUCCESS] Found {len(matched_hotels)} hotels by city filter")
+                        print(f"[FALLBACK SUCCESS] Using alternative city: {fallback_city}")
+                    else:
+                        print(f"[FALLBACK FAILED] No hotels found in any city")
                 except Exception as fallback_error:
                     print(f"[FALLBACK ERROR] {fallback_error}")
                     import traceback
                     traceback.print_exc()
             
-            # 4. FORCE MATCH: Hala boşsa, şehir metadata'sında kesinlikle city_param geçenleri zorla getir
-            if not matched_hotels:
-                print(f"[FORCE MATCH] Fallback 1 failed. Using FORCE MATCH...")
-                try:
-                    all_hotels = self.collection.get(limit=1000, include=['documents', 'metadatas'])
-                    print(f"[FORCE MATCH] Checking {len(all_hotels['metadatas'])} hotels for '{destination_city}'...")
-                    
-                    for i, metadata in enumerate(all_hotels['metadatas']):
-                        db_city = metadata.get('city', '')
-                        # FORCE: Tam metadata'ya bak, küçük harfe çevir ve kontrol et
-                        if destination_city.lower() in db_city.lower() or db_city.lower() in destination_city.lower():
-                            amenities_data = metadata.get('amenities', '[]')
-                            try:
-                                amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
-                            except:
-                                amenities_list = []
-                            
-                            # SYNC: Price fetching with type safety + force metadata extraction
-                            price_value = metadata.get('price', 0) or metadata.get('price_value', 0) or metadata.get('price_per_night', 0)
-                            price = float(price_value) if price_value is not None else 0.0
-                            hotel_name = metadata.get('name', '') or metadata.get('hotel_name', '') or 'Unknown'
-                            hotel_city = metadata.get('city', '') or metadata.get('city_name', '') or ''
-                            
-                            matched_hotels.append({
-                                "id": all_hotels['ids'][i],
-                                "name": hotel_name,
-                                "city": hotel_city,
-                                "concept": metadata.get('concept', ''),
-                                "price": price,
-                                "description": all_hotels['documents'][i],
-                                "amenities": amenities_list
-                            })
-                            print(f"[FORCE MATCH] Added: {hotel_name} in {hotel_city}")
-                            
-                            if len(matched_hotels) >= top_k:
-                                break
-                    
-                    if matched_hotels:
-                        print(f"[FORCE MATCH SUCCESS] Found {len(matched_hotels)} hotels!")
-                    else:
-                        print(f"[FORCE MATCH FAILED] No hotels found even with force match")
-                except Exception as force_error:
-                    print(f"[FORCE MATCH ERROR] {force_error}")
-                    import traceback
-                    traceback.print_exc()
-            
-            # DEBUG: Eğer hala boşsa, available cities'i göster
-            if not matched_hotels:
-                print(f"[WARNING] No hotels found for city: {destination_city}")
-                try:
-                    all_results = self.collection.get(limit=1000, include=['metadatas'])
-                    if all_results['metadatas']:
-                        cities_in_db = set()
-                        for metadata in all_results['metadatas']:
-                            city = metadata.get('city', '')
-                            if city:
-                                cities_in_db.add(city)
-                        example_cities = sorted(list(cities_in_db))
-                        print(f"[DEBUG] Available cities in DB: {example_cities}")
-                except Exception as debug_error:
-                    print(f"[DEBUG] Could not fetch available cities: {debug_error}")
-            
-            print(f"[SUCCESS] Found {len(matched_hotels)} hotels for {destination_city}\n")
-            return matched_hotels
+            result_city = fallback_city if fallback_city else destination_city
+            print(f"[SUCCESS] Found {len(matched_hotels)} hotels for {result_city}\n")
+            return (matched_hotels, destination_city, fallback_city)
         except Exception as e:
             print(f"[ERROR] Otel arama hatası: {e}")
             import traceback
