@@ -11506,5 +11506,37 @@
       "Açık Büfe"
     ],
     "description": "Bebekli ve çocuklu aileler için tasarlanmış, geniş oyun alanları ve güvenli plajı olan aile dostu lüks tesis."
+  },
+  {
+    "hotel_name": "Alaçatı Sessiz Ev",
+    "location": {
+      "city": "İzmir",
+      "district": "Çeşme",
+      "area": "Alaçatı"
+    },
+    "concept": "Yatak & Kahvaltı",
+    "price_per_night": 7600,
+    "amenities": [
+      "Bahçe",
+      "WiFi",
+      "Kütüphane"
+    ],
+    "description": "Yetişkinlere özel sessiz butik otel. Çocuksuz konsept, kütüphane ve meditasyon köşesiyle huzur arayanlar için."
+  },
+  {
+    "hotel_name": "Swissotel Büyük Efes",
+    "location": {
+      "city": "İzmir",
+      "district": "Konak",
+      "area": "Merkez"
+    },
+    "concept": "Oda Kahvaltı",
+    "price_per_night": 8500,
+    "amenities": [
+      "Havuz",
+      "Spa",
+      "Toplantı Odası"
+    ],
+    "description": "Şehrin kalbinde, iş seyahatleri ve aileler için uygun, geniş imkanlara sahip lüks otel."
   }
 ]

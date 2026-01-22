@@ -948,6 +948,50 @@
       "total_price": 350.0,
       "currency": "TRY",
       "hotel_coverage": 75
+    },
+    {
+      "service_code": "TR-ADB-VIP-BABY",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "İzmir Havalimanı",
+        "to_area_code": "ALACATI",
+        "to_area_name": "Alaçatı",
+        "estimated_duration": 60
+      },
+      "vehicle_info": {
+        "category": "VIP_MINIBUS",
+        "max_pax": 6,
+        "features": [
+          "BABY_SEAT_AVAIL",
+          "WIFI"
+        ]
+      },
+      "total_price": 1800.0,
+      "currency": "TRY",
+      "hotel_coverage": 90
+    },
+    {
+      "service_code": "TR-ADB-FAST-SEDAN",
+      "operator_id": "MERGEN_LOJ",
+      "route": {
+        "from_code": "ADB",
+        "from_name": "İzmir Havalimanı",
+        "to_area_code": "MERKEZ",
+        "to_area_name": "Merkez",
+        "estimated_duration": 25
+      },
+      "vehicle_info": {
+        "category": "LUXURY_SEDAN",
+        "max_pax": 4,
+        "features": [
+          "FAST_SERVICE",
+          "CLIMATE_CONTROL"
+        ]
+      },
+      "total_price": 1200.0,
+      "currency": "TRY",
+      "hotel_coverage": 85
     }
   ]
 }

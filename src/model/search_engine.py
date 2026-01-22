@@ -180,6 +180,7 @@ class TravelPlanner:
                         # ============================================================
                         city_value = None
                         district_value = None
+                        area_value = None
                         
                         # Try direct 'city' field first
                         if 'city' in hotel and hotel['city']:
@@ -197,15 +198,26 @@ class TravelPlanner:
                             if 'district' in hotel['location'] and hotel['location']['district']:
                                 district_value = hotel['location']['district']
                         
+                        # Try direct 'area' field first (✅ YENİ)
+                        if 'area' in hotel and hotel['area']:
+                            area_value = hotel['area']
+                        # Try nested location.area structure (✅ YENİ)
+                        elif 'location' in hotel and isinstance(hotel['location'], dict):
+                            if 'area' in hotel['location'] and hotel['location']['area']:
+                                area_value = hotel['location']['area']
+                        
                         # Set defaults if not found
                         city_clean = str(city_value).strip().lower() if city_value else 'bilinmiyor'
                         district_clean = str(district_value).strip().lower() if district_value else 'merkez'
+                        area_clean = str(area_value).strip().lower() if area_value else 'merkez'  # ✅ YENİ
                         
                         # Validate non-empty
                         if not city_clean or city_clean == 'unknown city' or city_clean == 'unknown':
                             city_clean = 'bilinmiyor'
                         if not district_clean or district_clean == 'unknown district' or district_clean == 'unknown':
                             district_clean = 'merkez'
+                        if not area_clean or area_clean == 'unknown area' or area_clean == 'unknown':  # ✅ YENİ
+                            area_clean = 'merkez'
                         
                         # Metadata hazırla
                         amenities_list = hotel.get("amenities", [])
@@ -225,6 +237,7 @@ class TravelPlanner:
                             "name": hotel_name,
                             "city": city_clean,  # NESTED DICT READY
                             "district": district_clean,  # NESTED DICT READY
+                            "area": area_clean,  # ✅ YENİ: Belek, Alanya, vb.
                             "location": f"{city_clean}, {district_clean}",
                             "concept": hotel.get("concept", ""),
                             "price": price_float,  # FLOAT not STRING
@@ -407,7 +420,7 @@ class TravelPlanner:
                     if intent.get("transfer"):
                         transfer, transfer_reason = self._filter_transfers(
                             airport_code=destination_iata,
-                            hotel_city=hotel.get("city", ""),
+                            hotel=hotel,  # ✅ Otel objesinin tamamını geç (district bilgisini içeriyor)
                             travel_style=travel_style
                         )
                     
@@ -662,7 +675,7 @@ class TravelPlanner:
                             })
                             print(f"[FALLBACK] Added: {hotel_name} in {hotel_city}")
                             
-                            if len(matched_hotels) >= 5:
+                            if len(matched_hotels) >= top_k:
                                 break
                     
                     if matched_hotels:
@@ -706,7 +719,7 @@ class TravelPlanner:
                             })
                             print(f"[FORCE MATCH] Added: {hotel_name} in {hotel_city}")
                             
-                            if len(matched_hotels) >= 5:
+                            if len(matched_hotels) >= top_k:
                                 break
                     
                     if matched_hotels:
@@ -799,98 +812,197 @@ class TravelPlanner:
             print(f"[ERROR] Uçuş filtreleme hatası: {e}")
             return (None, "")
 
-    def _filter_transfers(self, airport_code: str, hotel_city: str, travel_style: str) -> tuple:
+    def _filter_transfers(self, airport_code: str, hotel: dict, travel_style: str) -> tuple:
         """
-        Transfer Filtreleme: Havalimanı + bölge bazlı uygun araçları bul
+        ✅ DISTRICT-PRIORITY & AREA TRANSFER MATCHING (YENİ MANTIK):
         
-        ✅ FUZZY & ROBUST MATCHING (KRİTİK):
-        1. .lower() ve Türkçe karakter normalizasyonu (İ->i, Ç->c vb.)
-        2. Katı eşitlik (==) yerine içerme (in) kontrolü
-        3. District boşsa city üzerinden eşleşmeyi dene
-        4. Never "Dahil Değil": Lokasyon uyuşuyorsa MUTLAKA bağla
+        1. PRIORITY HIERARCHY: AREA > DISTRICT > CITY
+           - AREA (Alan): 'Belek', 'Alanya' vb. transfer_route'ta tam eşleşme arar
+           - DISTRICT (İlçe): Fallback, district ile eşleşme
+           - CITY (Şehir): Son fallback, şehir bazlı genel transfer
+        
+        2. FUZZY SEARCH: Örn. hotel.area='Belek' ise:
+           - transfer_route.to_area_name='Belek - Antalya' → 'belek' in 'belek - antalya' ✅
+        
+        3. FALLBACK: Alan/District match yoksa şehir → sonra default (merkez)
+        
+        Test Uyumu: Kullanıcı 'Belek'teki otelimize' dediğinde:
+        - hotel.area = 'Belek' (location.area'dan geliyor)
+        - transfer_route.to_area_name = 'Belek' veya 'Belek - Antalya'
+        - 'belek' in 'belek - antalya' → ✅ MATCH!
         
         Returns: (transfer_object, reason_text)
         """
         try:
-            matching_transfers = []
-            default_transfer = None
-            
             # Transfer dosyasının yapısını kontrol et
             if isinstance(self.transfers, dict) and "transfer_routes" in self.transfers:
                 routes = self.transfers.get("transfer_routes", [])
             else:
                 routes = self.transfers if isinstance(self.transfers, list) else []
             
-            # ✅ NORMALIZASYON: Türkçe karakterleri temizle ve lowercase yap
+            # ✅ ADIM 1: Hotel metadata'sından city, district, area bilgisini çıkart
+            hotel_city = hotel.get("city", "")
+            hotel_district = hotel.get("district", "")
+            hotel_area = hotel.get("area", "")  # ✅ YENİ: Area (Belek, Alanya vb.)
+            
             hotel_city_normalized = self._normalize_city_name(hotel_city)
+            hotel_district_normalized = self._normalize_city_name(hotel_district) if hotel_district else ""
+            hotel_area_normalized = self._normalize_city_name(hotel_area) if hotel_area else ""
+            
+            area_matches = []      # Area üzerinden match (YÜKSEKPRİORİTETİ)
+            district_matches = []  # District üzerinden match
+            city_matches = []      # City üzerinden match (fallback)
+            default_transfer = None
             
             for transfer in routes:
                 route = transfer.get("route", {})
+
                 
-                # Havalimanı eşleştirmesi
+                # Havalimanı eşleştirmesi (KESIN KURAL)
                 if route.get("from_code") == airport_code:
                     to_area_name = route.get("to_area_name", "")
                     to_area_normalized = self._normalize_city_name(to_area_name)
                     
                     # ============================================================
-                    # ✅ FUZZY MATCHING: Robust lokasyon eşleştirmesi
+                    # ✅ ADIM 2: AREA > DISTRICT > CITY PRIORITY MATCHING
                     # ============================================================
-                    # 1. Exact match (normalized)
-                    is_exact_match = hotel_city_normalized == to_area_normalized
                     
-                    # 2. Partial match (otel şehri transfer rotasında var mı?)
-                    is_partial_match = (
-                        hotel_city_normalized in to_area_normalized or  # 'çeşme' in 'çeşme merkez'
-                        to_area_normalized in hotel_city_normalized     # Tersi
+                    # 1. AREA MATCHING (YÜKSEKPRİORİTETİ - Belek, Alanya vb.)
+                    if hotel_area_normalized:
+                        # Exact match: 'belek' == 'belek'
+                        is_area_exact = hotel_area_normalized == to_area_normalized
+                        
+                        # Partial match: 'belek' in 'belek - antalya'
+                        is_area_partial = (
+                            hotel_area_normalized in to_area_normalized or
+                            to_area_normalized in hotel_area_normalized
+                        )
+                        
+                        # Fuzzy match
+                        area_similarity = SequenceMatcher(None, hotel_area_normalized, to_area_normalized).ratio()
+                        is_area_fuzzy = area_similarity > 0.6
+                        
+                        if is_area_exact or is_area_partial or is_area_fuzzy:
+                            area_matches.append((transfer, area_similarity, is_area_exact))
+                    
+                    # 2. DISTRICT MATCHING (Fallback - eğer area match yoksa)
+                    if hotel_district_normalized:
+                        # Exact match: 'serik' == 'serik'
+                        is_district_exact = hotel_district_normalized == to_area_normalized
+                        
+                        # Partial match: 'serik' in 'serik - merkez'
+                        is_district_partial = (
+                            hotel_district_normalized in to_area_normalized or
+                            to_area_normalized in hotel_district_normalized
+                        )
+                        
+                        # Fuzzy match
+                        district_similarity = SequenceMatcher(None, hotel_district_normalized, to_area_normalized).ratio()
+                        is_district_fuzzy = district_similarity > 0.6
+                        
+                        if is_district_exact or is_district_partial or is_district_fuzzy:
+                            district_matches.append((transfer, district_similarity, is_district_exact))
+                    
+                    # 3. CITY MATCHING (Fallback - sadece area & district match yoksa kullanılır)
+                    # Exact match: 'antalya' == 'antalya'
+                    is_city_exact = hotel_city_normalized == to_area_normalized
+                    
+                    # Partial match: 'antalya' in 'merkez antalya'
+                    is_city_partial = (
+                        hotel_city_normalized in to_area_normalized or
+                        to_area_normalized in hotel_city_normalized
                     )
                     
-                    # 3. Fuzzy similarity
-                    similarity_score = SequenceMatcher(None, hotel_city_normalized, to_area_normalized).ratio()
-                    is_fuzzy_match = similarity_score > 0.6
+                    # Fuzzy match
+                    city_similarity = SequenceMatcher(None, hotel_city_normalized, to_area_normalized).ratio()
+                    is_city_fuzzy = city_similarity > 0.6
                     
-                    # KESIN KURAL: Herhangi biri eşleşirse, bu transfer uygun
-                    if is_exact_match or is_partial_match or is_fuzzy_match:
-                        matching_transfers.append((transfer, similarity_score, is_exact_match))
+                    if is_city_exact or is_city_partial or is_city_fuzzy:
+                        city_matches.append((transfer, city_similarity, is_city_exact))
                     
-                    # Default transfer (merkez/şehir merkezi hedefi)
+                    # 4. DEFAULT TRANSFER (merkez/center - sonuncu çare)
                     if not default_transfer and ("merkez" in to_area_normalized or "center" in to_area_normalized):
                         default_transfer = transfer
             
             selected_transfer = None
             reason = ""
             
-            # ✅ Exact match'i tercih et (similarity en yüksek ve exact match = true)
-            if matching_transfers:
+            # ============================================================
+            # ✅ ADIM 3: MATCH SEÇİMİ (AREA > DISTRICT > CITY > DEFAULT)
+            # ============================================================
+            
+            # AREA MATCH VAR MI? (YÜKSEKPRİORİTETİ)
+            if area_matches:
                 # Exact match'leri ayırt et
-                exact_matches = [t for t in matching_transfers if t[2]]  # t[2] = is_exact_match
+                exact_area = [t for t in area_matches if t[2]]
                 
-                if exact_matches:
-                    # Exact match'ler arasında en ucuzu seç
-                    exact_matches.sort(key=lambda x: float(x[0].get("total_price", 0)))
-                    best_transfer = exact_matches[0][0]
+                if exact_area:
+                    exact_area.sort(key=lambda x: float(x[0].get("total_price", 0)))
+                    best_transfer = exact_area[0][0]
                 else:
-                    # Fuzzy match'ler arasında similarity'ye göre sırala, sonra fiyata göre
-                    matching_transfers.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
-                    best_transfer = matching_transfers[0][0]
-                
-                # Travel style'a göre tercih et
-                if travel_style == "lüks":
-                    vip_candidates = [t for t in (exact_matches if exact_matches else matching_transfers)
-                                     if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
-                    if vip_candidates:
-                        best_transfer = vip_candidates[0][0]
+                    area_matches.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
+                    best_transfer = area_matches[0][0]
                 
                 selected_transfer = best_transfer
             
-            # Eğer fuzzy match yoksa, default transfer'i kullan
+            # DISTRICT MATCH VAR MI? (İkinci öncelik)
+            elif district_matches:
+                # Exact match'leri ayırt et
+                exact_district = [t for t in district_matches if t[2]]
+                
+                if exact_district:
+                    exact_district.sort(key=lambda x: float(x[0].get("total_price", 0)))
+                    best_transfer = exact_district[0][0]
+                else:
+                    district_matches.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
+                    best_transfer = district_matches[0][0]
+                
+                selected_transfer = best_transfer
+            
+            # CITY MATCH VAR MI? (Üçüncü öncelik)
+            elif city_matches:
+                # Exact match'leri ayırt et
+                exact_city = [t for t in city_matches if t[2]]
+                
+                if exact_city:
+                    exact_city.sort(key=lambda x: float(x[0].get("total_price", 0)))
+                    best_transfer = exact_city[0][0]
+                else:
+                    city_matches.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
+                    best_transfer = city_matches[0][0]
+                
+                selected_transfer = best_transfer
+            
+            # HIÇBÎR MATCH YOK, DEFAULT'Yİ KULLAN
             elif default_transfer:
                 selected_transfer = default_transfer
             
+            # TRANSFER SEÇİLDİ, DETAYLARI HAZIRLA
             if selected_transfer:
                 vehicle_type = selected_transfer.get("vehicle_info", {}).get("category", "")
                 vehicle_name = self.llm.translate_code(vehicle_type)
                 price = float(selected_transfer.get("total_price", 0))
                 duration = selected_transfer.get("route", {}).get("estimated_duration", 0)
+                
+                # Travel style tercihini uygula (VIP vs standard)
+                if travel_style == "lüks":
+                    vip_candidates = None
+                    
+                    # District match varsa VIP kontrol et
+                    if district_matches:
+                        vip_candidates = [t for t in district_matches 
+                                         if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
+                    # City match varsa VIP kontrol et
+                    elif city_matches:
+                        vip_candidates = [t for t in city_matches 
+                                         if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
+                    
+                    if vip_candidates:
+                        vip_candidates.sort(key=lambda x: float(x[0].get("total_price", 0)))
+                        selected_transfer = vip_candidates[0][0]
+                        vehicle_type = selected_transfer.get("vehicle_info", {}).get("category", "")
+                        vehicle_name = self.llm.translate_code(vehicle_type)
+                        price = float(selected_transfer.get("total_price", 0))
                 
                 reason = f"{vehicle_name} - {duration} dakika - ₺{price:,.0f}"
                 

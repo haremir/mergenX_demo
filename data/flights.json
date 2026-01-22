@@ -1397,6 +1397,52 @@
         "Muratpaşa",
         "Lara"
       ]
+    },
+    {
+      "flight_id": "TK-MORNING-ADB",
+      "carrier": "TK",
+      "flight_no": "2022",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-18T07:00:00",
+        "arrival": "2026-06-18T08:15:00"
+      },
+      "pricing": {
+        "amount": 2450.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Çeşme"
+      ]
+    },
+    {
+      "flight_id": "TK-EVENING-ADB",
+      "carrier": "TK",
+      "flight_no": "2140",
+      "status": "SCHEDULED",
+      "leg": {
+        "origin": "IST",
+        "destination": "ADB",
+        "departure": "2026-06-18T21:00:00",
+        "arrival": "2026-06-18T22:15:00"
+      },
+      "pricing": {
+        "amount": 2150.0,
+        "currency": "TRY",
+        "fare_class": "Y",
+        "cabin": "ECONOMY"
+      },
+      "baggage": "1PC x 20KG",
+      "transfer_zones": [
+        "Alaçatı",
+        "Çeşme"
+      ]
     }
   ],
   "route_statistics": {
