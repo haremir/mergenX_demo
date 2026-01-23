@@ -377,6 +377,12 @@ class MergenLLM:
             "konyaaltı": "GZT",
         }
         
+        # ============================================================
+        # ✅ FIX 4: PROMPT RECOVERY - HARD-CODED
+        # Kullanıcı niyetini analiz ederken şehri 'city', konsepti 'concept'
+        # olarak ayır ve arama motoruna bu iki parametreyi AYRI gönder.
+        # ============================================================
+        
         # Prompt hazırlama
         prompt = f"""
         Kullanıcı Sorgusu: "{user_query}"
@@ -385,11 +391,13 @@ class MergenLLM:
         Aşağıdaki bilgileri çıkar ve JSON olarak döndür:
 
         1. **INTENT**: Kullanıcı uçuş, transfer ve otel istiyor mu?
-        2. **DESTINATION_CITY**: Varış şehri adı (Türkçe)
+        2. **DESTINATION_CITY**: Varış şehri adı (Türkçe) - SADECE ŞEHİR ADI (örn: "İzmir", "Antalya")
         3. **DESTINATION_IATA**: Varış havalimanı kodu
         4. **ORIGIN_IATA**: Kalkış havalimanı (belirtilmemişse "IST" kullan)
         5. **TRAVEL_STYLE**: Seyahat stili - "ekonomik", "lüks" veya "aile" seçeneklerinden biri
-        6. **PREFERENCES**: Kullanıcı tercihlerinin listesi (5-6 adet, örn: ["aquapark", "sessiz", "denize sıfır"])
+        6. **CONCEPT**: Otel konsepti - SADECE konsept türü (örn: "butik", "all-inclusive", "spa", "aquapark")
+        7. **TIME_PREFERENCE**: Uçuş zaman tercihi - "sabah", "öğleden", "akşam" (belirtilmemişse null)
+        8. **PREFERENCES**: Kullanıcı tercihlerinin listesi (5-6 adet, örn: ["aquapark", "sessiz", "denize sıfır"])
 
         Bilinen havalimanı kodları:
         - IST: İstanbul
@@ -413,11 +421,15 @@ class MergenLLM:
             "destination_iata": "ADB",
             "origin_iata": "IST",
             "travel_style": "aile",
+            "concept": "butik",
+            "time_preference": "akşam",
             "preferences": ["denize sıfır", "çocuk havuzu", "animasyon", "sessiz bölge", "açık buffet"]
         }}
         
         Kurallar:
-        - Destination city'yi Türkçe yaz
+        - **CITY**: SADECE şehir adı ("İzmir", "Antalya", "İstanbul") - konsept/özellik YOK
+        - **CONCEPT**: SADECE otel konsepti ("butik", "all-inclusive", "spa") - şehir adı YOK
+        - **TIME_PREFERENCE**: Kullanıcı "sabah uçuşu", "akşam kalkarım" gibi ifade kullandıysa çıkar
         - IATA kodlarını büyük harfle ver
         - Preferences'ı kullanıcının vurguladığı kriterlere göre belirle
         - Travel style şu 3 seçenekten biri olmalı: "ekonomik", "lüks", "aile"
@@ -448,6 +460,13 @@ class MergenLLM:
             if not result.get("preferences"):
                 result["preferences"] = []
             
+            # ✅ FIX 4: Yeni alanları kontrol et
+            if not result.get("concept"):
+                result["concept"] = ""
+            
+            if not result.get("time_preference"):
+                result["time_preference"] = None
+            
             print(f"[DEBUG] Extracted Travel Params: {result}")
             return result
             
@@ -459,5 +478,7 @@ class MergenLLM:
                 "destination_iata": "ADB",
                 "origin_iata": "IST",
                 "travel_style": "aile",
+                "concept": "",
+                "time_preference": None,
                 "preferences": []
             }

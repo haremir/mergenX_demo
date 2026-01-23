@@ -123,6 +123,21 @@ if engine:
             st.success("✅ LLM: Aktif")
         top_k = st.slider("Öneri Sayısı", 1, 10, 3)
         st.divider()
+        
+        # DB Yenileme Butonu
+        if st.button("🔄 Veritabanını Yeniden Oluştur", use_container_width=True):
+            import shutil
+            db_path = "data/chroma_db_v2"
+            if os.path.exists(db_path):
+                try:
+                    shutil.rmtree(db_path)
+                    st.success("✅ Veritabanı silindi! Sayfa yenilendiğinde tekrar oluşturulacak.")
+                    st.cache_resource.clear()
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Veritabanı silinemedi: {e}")
+        
         if st.button("🔄 Aramayı Temizle", use_container_width=True):
             clear_search()
             st.rerun()
@@ -158,7 +173,7 @@ if engine:
             # Sonuç kontrolü
             if error_msg:
                 logger.error(f"Search error: {error_msg}")
-                st.error(f"❌ Arama yapılamadı: {str(e)}. Lütfen tekrar deneyin.")
+                st.error(f"❌ Arama yapılamadı: {error_msg}. Lütfen tekrar deneyin.")
             elif not results or not isinstance(results, list):
                 logger.warning(f"No results for query: {query}")
                 st.error("❌ Arama sonucu bulunamadı. Lütfen bir daha deneyin.")

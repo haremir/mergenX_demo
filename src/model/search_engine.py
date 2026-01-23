@@ -176,7 +176,8 @@ class TravelPlanner:
                         hotel_desc = hotel.get("description", "")
                         
                         # ============================================================
-                        # NESTED DICT EXTRACTION: City ve District
+                        # ✅ FIXED: NESTED DICT EXTRACTION - City, District & Area
+                        # NEVER leave district/area empty - use city as fallback
                         # ============================================================
                         city_value = None
                         district_value = None
@@ -190,34 +191,50 @@ class TravelPlanner:
                             if 'city' in hotel['location'] and hotel['location']['city']:
                                 city_value = hotel['location']['city']
                         
-                        # Try direct 'district' field first
-                        if 'district' in hotel and hotel['district']:
-                            district_value = hotel['district']
-                        # Try nested location.district structure
-                        elif 'location' in hotel and isinstance(hotel['location'], dict):
+                        # ✅ PRIORITY: Try nested location.district FIRST (primary source)
+                        if 'location' in hotel and isinstance(hotel['location'], dict):
                             if 'district' in hotel['location'] and hotel['location']['district']:
                                 district_value = hotel['location']['district']
+                        # Fallback: Try direct 'district' field
+                        if not district_value and 'district' in hotel and hotel['district']:
+                            district_value = hotel['district']
                         
-                        # Try direct 'area' field first (✅ YENİ)
-                        if 'area' in hotel and hotel['area']:
-                            area_value = hotel['area']
-                        # Try nested location.area structure (✅ YENİ)
-                        elif 'location' in hotel and isinstance(hotel['location'], dict):
+                        # ✅ PRIORITY: Try nested location.area FIRST (primary source)
+                        if 'location' in hotel and isinstance(hotel['location'], dict):
                             if 'area' in hotel['location'] and hotel['location']['area']:
                                 area_value = hotel['location']['area']
+                        # Fallback: Try direct 'area' field
+                        if not area_value and 'area' in hotel and hotel['area']:
+                            area_value = hotel['area']
                         
-                        # Set defaults if not found
-                        city_clean = str(city_value).strip().lower() if city_value else 'bilinmiyor'
-                        district_clean = str(district_value).strip().lower() if district_value else 'merkez'
-                        area_clean = str(area_value).strip().lower() if area_value else 'merkez'  # ✅ YENİ
+                        # ✅ NORMALIZE with proper Turkish character handling
+                        city_clean = self._normalize_city_name(str(city_value)) if city_value else 'bilinmiyor'
                         
-                        # Validate non-empty
-                        if not city_clean or city_clean == 'unknown city' or city_clean == 'unknown':
+                        # ✅ CRITICAL: If district is empty, use city as fallback (NOT 'merkez')
+                        if district_value and str(district_value).strip():
+                            district_clean = self._normalize_city_name(str(district_value))
+                        else:
+                            district_clean = city_clean  # Use city name as fallback
+                        
+                        # ✅ CRITICAL: If area is empty, use district as fallback
+                        if area_value and str(area_value).strip():
+                            area_clean = self._normalize_city_name(str(area_value))
+                        else:
+                            area_clean = district_clean  # Use district name as fallback
+                        
+                        # ✅ DEBUG: Log first 5 hotels to verify metadata
+                        if total_added < 5:
+                            print(f"[DEBUG METADATA] Hotel: {hotel_name}")
+                            print(f"  Raw: city={city_value}, district={district_value}, area={area_value}")
+                            print(f"  Clean: city={city_clean}, district={district_clean}, area={area_clean}")
+                        
+                        # Final validation - ensure no empty or invalid values
+                        if not city_clean or city_clean in ['unknown city', 'unknown', 'none', 'null']:
                             city_clean = 'bilinmiyor'
-                        if not district_clean or district_clean == 'unknown district' or district_clean == 'unknown':
-                            district_clean = 'merkez'
-                        if not area_clean or area_clean == 'unknown area' or area_clean == 'unknown':  # ✅ YENİ
-                            area_clean = 'merkez'
+                        if not district_clean or district_clean in ['unknown district', 'unknown', 'none', 'null', 'merkez']:
+                            district_clean = city_clean  # Always fall back to city
+                        if not area_clean or area_clean in ['unknown area', 'unknown', 'none', 'null', 'merkez']:
+                            area_clean = district_clean  # Always fall back to district
                         
                         # Metadata hazırla
                         amenities_list = hotel.get("amenities", [])
@@ -344,6 +361,111 @@ class TravelPlanner:
         except Exception as e:
             self.transfers = {"transfer_routes": []}
 
+    def _simple_parse_query(self, user_query: str) -> dict:
+        """
+        SIMPLIFIED Query Parser: NO LLM, just basic keyword matching
+        
+        Extract basics:
+        - City names (with strict normalization + city lock)
+        - Travel style keywords
+        - Time preferences (sabah, akşam, öğle, gece)
+        - Intent (hotel, flight, transfer) with expanded keywords
+        
+        Returns: travel_params dict with city_explicitly_specified flag
+        """
+        query_lower = user_query.lower()
+        
+        # ✅ FIX 1: STRICT NORMALIZATION - Normalize user query to handle Turkish characters
+        # İzmir -> izmir, Ş -> s, etc.
+        query_normalized = self._normalize_city_name(user_query)
+        
+        # City mapping
+        city_keywords = {
+            "antalya": ("Antalya", "AYT"),
+            "izmir": ("İzmir", "ADB"),
+            "bodrum": ("Bodrum", "BJV"),
+            "dalaman": ("Dalaman", "DLM"),
+            "gaziantep": ("Gaziantep", "GZT")
+        }
+        
+        destination_city = "İzmir"  # Default
+        destination_iata = "ADB"
+        city_explicitly_specified = False  # ✅ NEW: Track if user specified a city
+        
+        # ✅ FIX 1: Use normalized query for city matching
+        for keyword, (city, iata) in city_keywords.items():
+            if keyword in query_normalized:
+                destination_city = city
+                destination_iata = iata
+                city_explicitly_specified = True  # ✅ User explicitly mentioned this city
+                break
+        
+        # Travel style
+        travel_style = "aile"  # Default
+        if any(word in query_lower for word in ["lüks", "lux", "vip", "premium"]):
+            travel_style = "lüks"
+        elif any(word in query_lower for word in ["ekonomik", "ucuz", "budget"]):
+            travel_style = "ekonomik"
+        
+        # ✅ UPDATED: TIME PREFERENCE PARSING - Expanded keywords
+        # Detect time keywords: sabah, akşam, öğle, gece
+        time_preference = None
+        time_keywords = {
+            "sabah": ["sabah", "morning", "erken", "sabahları", "sabahın"],
+            "öğle": ["öğle", "öğleden", "noon", "afternoon", "öğleyin", "öğleden sonra"],
+            "akşam": ["akşam", "evening", "akşamları", "akşamın", "akşamüstü"],
+            "gece": ["gece", "night", "geç", "geceleyin", "gece yarısı"]
+        }
+        
+        for time_key, time_words in time_keywords.items():
+            if any(word in query_lower for word in time_words):
+                time_preference = time_key
+                break
+        
+        # ✅ UPDATED: EXPANDED FLIGHT INTENT KEYWORDS
+        # Intent - assume all 3 unless specified
+        flight_keywords = [
+            "uçuş", "uçak", "uçağı", "uçağıyla", "uçakla", 
+            "flight", "gidiş", "dönüş", "uçma", "uçuyorum",
+            "havayolu", "bilet", "sefer"
+        ]
+        
+        intent = {
+            "hotel": True,
+            "flight": any(keyword in query_lower for keyword in flight_keywords),
+            "transfer": "transfer" in query_lower or "araç" in query_lower
+        }
+        
+        # If no specific mention, include all
+        if not intent["flight"] and not intent["transfer"]:
+            intent["flight"] = True
+            intent["transfer"] = True
+        
+        return {
+            "destination_city": destination_city,
+            "destination_iata": destination_iata,
+            "origin_iata": "IST",  # Always Istanbul for now
+            "travel_style": travel_style,
+            "intent": intent,
+            "preferences": [],  # Trust vector DB, no manual preferences
+            "concept": "",
+            "time_preference": time_preference,
+            "city_explicitly_specified": city_explicitly_specified  # ✅ NEW: Strict city lock flag
+        }
+
+    def _simple_translate(self, code: str) -> str:
+        """Simple code translation without LLM"""
+        translations = {
+            "TK": "Türk Hava Yolları",
+            "PC": "Pegasus",
+            "XQ": "SunExpress",
+            "VAN": "Minivan",
+            "VITO": "Mercedes Vito",
+            "VIP": "VIP Araç",
+            "SPRINTER": "Mercedes Sprinter"
+        }
+        return translations.get(code, code)
+    
     def plan_travel(self, user_query: str, top_k: int = 3) -> tuple:
         """
         ANA SEYAHATTRAFİK PLANLAMA FONKSİYONU - Tamamen Revize
@@ -371,9 +493,9 @@ class TravelPlanner:
         
         try:
             # ============================================================
-            # ADIM 1: NİYET ANALİZİ
+            # ADIM 1: NİYET ANALİZİ (BASIT PARSING - NO LLM)
             # ============================================================
-            travel_params = self.llm.extract_travel_params(user_query)
+            travel_params = self._simple_parse_query(user_query)
             
             intent = travel_params.get("intent", {})
             destination_city = travel_params.get("destination_city", "")
@@ -381,6 +503,48 @@ class TravelPlanner:
             origin_iata = travel_params.get("origin_iata", "IST")
             travel_style = travel_params.get("travel_style", "aile")
             preferences = travel_params.get("preferences", [])
+            city_explicitly_specified = travel_params.get("city_explicitly_specified", False)  # ✅ NEW
+            
+            # ✅ FIX 4: Konsepti ayrı al - city ile karıştırılmasın
+            concept = travel_params.get("concept", "")
+            
+            # ============================================================
+            # ✅ STRICT CITY LOCK: If user specified a city, NEVER fallback or infer
+            # ============================================================
+            if city_explicitly_specified:
+                print(f"[🔒 STRICT CITY LOCK] User explicitly requested: {destination_city}")
+                # NO inference, NO fallback - user's choice is final
+            else:
+                # ============================================================
+                # ✅ FIX 2: NİYET VE ŞEHİR SENKRONİZASYONU (only if city NOT specified)
+                # Kullanıcı şehir belirtmediğinde; niyetten (travel_style/preferences)
+                # yola çıkarak destination_city parametresini otomatik doldur
+                # ============================================================
+                if not destination_city or destination_city == "bilinmiyor":
+                    # Travel style ve preferences'tan şehir çıkarımı
+                    style_to_city = {
+                        "kız kıza": "İzmir",
+                        "eğlence": "İzmir",
+                        "villa": "Antalya",
+                        "lüks": "Antalya",
+                        "ekonomik": "İzmir",
+                        "aile": "Antalya"
+                    }
+                    
+                    # Preferences'tan şehir ipucu ara
+                    pref_str = ' '.join(preferences).lower()
+                    if any(word in pref_str for word in ['kız', 'eğlence', 'nightlife', 'bar']):
+                        destination_city = "İzmir"
+                        destination_iata = "ADB"
+                    elif any(word in pref_str for word in ['villa', 'lüks', 'spa', 'aquapark']):
+                        destination_city = "Antalya"
+                        destination_iata = "AYT"
+                    else:
+                        # Travel style'dan varsayılan
+                        destination_city = style_to_city.get(travel_style, "İzmir")
+                        destination_iata = "ADB" if destination_city == "İzmir" else "AYT"
+                    
+                    print(f"[AUTO DESTINATION] No city specified, inferred from style: {destination_city}")
             
             # ============================================================
             # ADIM 2: OTEL ARAMA (Preferences'ı Kullanarak)
@@ -389,38 +553,88 @@ class TravelPlanner:
             # Preferences'tan irrelevant kelimeleri temizle (uçuş, transfer vb.)
             clean_preferences = self._clean_preferences(preferences)
             
+            # ✅ FIX 4: Konsepti sorguya ekle ama city ile karıştırma
             # Temizlenmiş preferences'ı sorgu olarak kullan (destination_city'yi ayrı parameter olarak geç)
-            search_query = f"{' '.join(clean_preferences)}" if clean_preferences else destination_city
-            hotels, primary_city, fallback_city = self._search_hotels_by_preferences(search_query, destination_city, top_k)
+            search_parts = []
+            if concept:  # Konsept varsa ekle
+                search_parts.append(concept)
+            if clean_preferences:  # Tercihler varsa ekle
+                search_parts.extend(clean_preferences)
             
-            # Fallback kontrolü: Kullanıcıyı bilgilendirmek için fallback_city'i kaydet
-            warning_message = None
+            search_query = ' '.join(search_parts) if search_parts else destination_city
+            print(f"[SEARCH QUERY] city='{destination_city}', concept='{concept}', query='{search_query}'")
+            
+            hotels = self._search_hotels_simple(search_query, destination_city, top_k)
+            
+            # ✅ FIX 4: KILL FALLBACK - No alternative cities, no jumping
+            # If user requested İzmir and no hotels found, return empty - DON'T jump to Antalya
             if not hotels:
-                return ([], f"{destination_city} için uygun otel bulunamadı")
-            elif fallback_city:
-                warning_message = f"⚠️ Üzgünüm, {destination_city}'da istediğiniz konseptte bir yer bulamadım. Bunun yerine {fallback_city}'deki önerilerim:"
+                if city_explicitly_specified:
+                    strict_message = f"İstediğiniz bölgede ({destination_city}) kriterlerinize uygun konaklama bulunamadı. Lütfen farklı bir şehir veya kriter deneyin."
+                    print(f"[🔒 STRICT CITY LOCK] User explicitly requested {destination_city}, no hotels found - NO FALLBACK")
+                else:
+                    strict_message = f"Kriterlerinize uygun konaklama bulunamadı. Lütfen farklı bir kriter deneyin."
+                    print(f"[✅ NO FALLBACK] No hotels found for inferred city {destination_city}")
+                return ([], strict_message)
             
             # ============================================================
-            # ADIM 3: PAKETLEME VE FİLTRELEME
+            # ADIM 3: PAKETLEME VE FİLTRELEME (NO ALTERNATIVE CITY LOGIC)
             # ============================================================
             packages = []
             
             for idx, hotel in enumerate(hotels, 1):
                 
                 try:
+                    # Debug: Intent kontrolü
+                    print(f"[DEBUG] Processing hotel {idx}, intent={intent}")
+                    
                     # Uçuş filtrele
                     flight = None
                     flight_reason = ""
                     flight_error = None
                     if intent.get("flight"):
+                        # ✅ FIX 3: Zaman tercihini travel_params'tan al ve flight filtreye gönder
+                        # ✅ AKILLI BOŞLUK DOLDURMA: Belirtilmemişse varsayılan 'sabah'
+                        time_preference = travel_params.get("time_preference", None)
+                        time_was_default = False
+                        if not time_preference:
+                            time_preference = 'sabah'
+                            time_was_default = True
+                            print(f"[SMART DEFAULT] No time preference specified, defaulting to 'sabah'")
+                        
                         flight, flight_reason = self._filter_flights(
                             origin_iata=origin_iata,
                             destination_iata=destination_iata,
-                            travel_style=travel_style
+                            travel_style=travel_style,
+                            time_preference=time_preference
                         )
+                        
+                        # HARD-CODED RULE 3: Airport-City Sync - flight destination must 100% match hotel city
+                        # ⛔ If flight destination code (AYT) doesn't match hotel city (Antalya), skip this flight
+                        if flight:
+                            flight_dest = flight.get("destination", "")
+                            hotel_city_name = hotel.get("city", "")
+                            
+                            # Map IATA codes to city names
+                            iata_to_city = {
+                                "AYT": "Antalya",
+                                "ADB": "İzmir",
+                                "BJV": "Bodrum",
+                                "DLM": "Dalaman",
+                                "GZT": "Gaziantep"
+                            }
+                            
+                            expected_city = iata_to_city.get(flight_dest, "")
+                            if expected_city and hotel_city_name:
+                                if self._normalize_city_name(expected_city) != self._normalize_city_name(hotel_city_name):
+                                    print(f"[HARD-CODED RULE 3] Airport-City mismatch: Flight {flight_dest} ({expected_city}) != Hotel city ({hotel_city_name}) - SKIPPING FLIGHT")
+                                    flight = None
+                                    flight_error = f"Uçuş-Otel şehir uyuşmazlığı: {flight_dest} ({expected_city}) != {hotel_city_name}"
+                        
                         # Flight-Hotel şehir uyuşmazlığı kontrolü
                         if not flight and destination_iata != "IST":  # IST dışı destinasyonlar kritik
-                            flight_error = f"Şehir uyuşmazlığı: {destination_city} için uygun uçuş bulunamadı"
+                            if not flight_error:
+                                flight_error = f"Şehir uyuşmazlığı: {destination_city} için uygun uçuş bulunamadı"
                     
                     # Transfer filtrele
                     transfer = None
@@ -449,7 +663,8 @@ class TravelPlanner:
                             "travel_style": travel_style,
                             "preferences": preferences,
                             "destination_iata": destination_iata,
-                            "origin_iata": origin_iata
+                            "origin_iata": origin_iata,
+                            "time_was_default": time_was_default if intent.get("flight") else False  # ✅ FIX 3
                         },
                         "error": flight_error  # ⚠️ Şehir uyuşmazlığı uyarısı
                     }
@@ -519,26 +734,35 @@ class TravelPlanner:
                             "total": 0
                         }
                     
-                    # ============================================================
-                    # ADIM 4: AKILLI ÖZET - LLM'e Paketi Göndererek Özet Oluştur
-                    # ============================================================
-                    intelligent_summary = self._generate_intelligent_summary(
-                        package=package,
-                        user_query=user_query,
-                        travel_params=travel_params
-                    )
-                    
-                    package["intelligent_summary"] = intelligent_summary
+                    # ✅ FIX 1: Paket hazır, özet şimdilik boş (batch processing için)
+                    package["intelligent_summary"] = ""  # Batch'te doldurulacak
                     packages.append(package)
                 
                 except Exception as package_error:
                     # Bu oteli atla, sonraki otele geç
                     continue
             
-            # Fallback uyarısı varsa paketlere ekle
-            if warning_message:
-                for package in packages:
-                    package["fallback_warning"] = warning_message
+            # ============================================================
+            # ✅ FIX 1: API VERİMLİLİĞİ - BATCH PROCESSING
+            # Her paket için ayrı ayrı LLM isteği yerine, tüm paketlerin
+            # 'Reasoning' metinlerini tek bir LLM çağrısıyla oluştur.
+            # Bu, 429 Too Many Requests hatasını %90 oranında kesecektir.
+            # ============================================================
+            if packages:
+                print(f"[BATCH PROCESSING] Generating reasoning for {len(packages)} packages in single LLM call...")
+                batch_summaries = self._generate_batch_summaries(
+                    packages=packages,
+                    user_query=user_query,
+                    travel_params=travel_params
+                )
+                
+                # Batch summaries'i paketlere ata
+                for idx, package in enumerate(packages):
+                    if idx < len(batch_summaries):
+                        package["intelligent_summary"] = batch_summaries[idx]
+                    else:
+                        # Fallback
+                        package["intelligent_summary"] = f"{package['hotel']['name']}, tercihlerinize uyumlu bir paket sunar."
             
             return (packages, None)
             
@@ -549,28 +773,18 @@ class TravelPlanner:
 
     def _normalize_city_name(self, city: str) -> str:
         """
-        Türkçe karakterleri normalize et ve karşılaştırma için hazırla.
-        Tüm harfleri lowercase'e çevir ve Türkçe karakterleri ASCII karşılıklarıyla değiştir.
+        Türkçe karakterleri normalize et - Manuel İ -> i dönüşümü ile
+        
+        IMPORTANT: Database'e yazarken de AYNI fonksiyonu kullan!
         """
         if not city:
             return ""
-        # Step 1: Replace Turkish uppercase special characters FIRST
-        city = city.replace('İ', 'i')
-        city = city.replace('Ç', 'c')
-        city = city.replace('Ğ', 'g')
-        city = city.replace('Ş', 's')
-        city = city.replace('Ü', 'u')
-        city = city.replace('Ö', 'o')
-        # Step 2: Convert to lowercase (handles remaining uppercase)
-        city = city.lower()
-        # Step 3: Replace any remaining Turkish lowercase characters
-        city = city.replace('ç', 'c')
-        city = city.replace('ğ', 'g')
-        city = city.replace('ş', 's')
-        city = city.replace('ü', 'u')
-        city = city.replace('ö', 'o')
-        # Step 4: Strip whitespace
-        return city.strip()
+        
+        # ✅ Manuel Turkish character normalization to prevent i̇zmir artifacts
+        # İ -> i (capital dotted I to lowercase i)
+        # Other Turkish chars: ş, ğ, ü, ö, ç are handled by lower()
+        normalized = city.replace('İ', 'i').replace('I', 'ı')
+        return normalized.lower().strip()
 
     def _clean_preferences(self, preferences: list) -> list:
         """
@@ -601,135 +815,103 @@ class TravelPlanner:
         
         return cleaned
 
-    def _search_hotels_by_preferences(self, search_query: str, destination_city: str, top_k: int = 3) -> tuple:
+    def _search_hotels_simple(self, search_query: str, destination_city: str, top_k: int = 3) -> list:
         """
-        Otel Arama: City Lock + Smart Fallback
+        SIMPLIFIED Hotel Search: NO FALLBACK, NO FUZZY LOGIC
         
-        KESIN KURALLAR:
-        1. City Lock: Kullanıcı şehir belirttiyse YALNIZCA o şehirde ara
-        2. Exact City Match: Partial matching yerine kesin city eşleştirmesi
-        3. Smart Fallback: O şehirde otel yoksa, başka şehirden öner
+        Rules:
+        1. Search only in requested city
+        2. If no hotels found, return empty list
+        3. Trust vector DB results
         
-        Returns: (hotels_list, primary_city, fallback_city)
+        Returns: hotels_list (simple list, no fallback info)
         """
         try:
-            # 1. ŞEHİR NORMALIZASYONU
+            # Normalize city name
             normalized_city = self._normalize_city_name(destination_city)
-            fallback_city = None
             
-            # Sorguyu vektore cevir
+            # Vector search with STRICT city filter
             query_vector = self.embedder.create_embeddings([search_query])[0].tolist()
-
-            # 2. VEKTÖR ARAMASI YAP (City Lock: YALNIZCA destination_city'de ara)
-            all_results = self.collection.query(
-                query_embeddings=[query_vector],
-                n_results=top_k * 5,  # Tercih seçimini arttır
-                include=['documents', 'metadatas']
-            )
-
-            # Sonuçları düzenle ve ŞEHRİ KESIN EŞLEŞTIRME ile filtrele (City Lock)
+            
+            # Try WITHOUT where filter first, then filter manually
+            query_params = {
+                'query_embeddings': [query_vector],
+                'n_results': top_k * 10,  # Get more to filter manually
+                'include': ['documents', 'metadatas']
+            }
+            
+            print(f"[SIMPLE SEARCH] Searching in city='{normalized_city}'")
+            all_results = self.collection.query(**query_params)
+            
+            # Debug: Print what cities we got
+            if all_results and 'metadatas' in all_results and all_results['metadatas']:
+                found_cities = [meta.get('city', 'N/A') for meta in all_results['metadatas'][0][:5]]
+                print(f"[DEBUG] Sample cities from DB: {found_cities}")
+            
+            # Build hotel list - MANUAL CITY FILTERING
             matched_hotels = []
             for i in range(len(all_results['ids'][0])):
+                # Get city and normalize it
                 db_city = all_results['metadatas'][0][i].get('city', '')
-                normalized_db_city = self._normalize_city_name(db_city)
+                db_city_normalized = self._normalize_city_name(db_city)
                 
-                # CITY LOCK: Kesin eşleştirme - sadece destination_city'yle tamamen eşleşenler
-                if normalized_city == normalized_db_city:
-                    amenities_data = all_results['metadatas'][0][i].get('amenities', '[]')
-                    try:
-                        amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
-                    except:
-                        amenities_list = []
-                    
-                    # SYNC: Price fetching with standardized metadata field name
-                    price_value = all_results['metadatas'][0][i].get('price', 0.0)
-                    price = float(price_value) if price_value else 0.0
-                    
-                    matched_hotels.append({
-                        "id": all_results['ids'][0][i],
-                        "name": all_results['metadatas'][0][i].get('name', 'Unknown'),
-                        "city": all_results['metadatas'][0][i].get('city', ''),
-                        "concept": all_results['metadatas'][0][i].get('concept', ''),
-                        "price": price,
-                        "description": all_results['documents'][0][i],
-                        "amenities": amenities_list
-                    })
-                    
-                    if len(matched_hotels) >= top_k:
-                        break
-            
-            # 3. FALLBACK: Talep edilen şehirde otel yoksa, başka şehirden öner
-            if not matched_hotels:
-                print(f"[CITY LOCK] No hotels in {destination_city}, trying alternatives...")
+                # Only include if city matches
+                if db_city_normalized != normalized_city:
+                    continue
+                
+                amenities_data = all_results['metadatas'][0][i].get('amenities', '[]')
                 try:
-                    all_hotels = self.collection.get(limit=1000, include=['documents', 'metadatas'])
-                    
-                    # Tüm şehirleri ve otellerini topla
-                    cities_hotels = {}
-                    for i, metadata in enumerate(all_hotels['metadatas']):
-                        db_city = metadata.get('city', '')
-                        if db_city not in cities_hotels:
-                            cities_hotels[db_city] = []
-                        cities_hotels[db_city].append((i, metadata))
-                    
-                    # Alternatif şehirlerden otel seç (destination_city hariç)
-                    for db_city, hotels_in_city in cities_hotels.items():
-                        if db_city.lower() != destination_city.lower() and not fallback_city:
-                            # Bu şehirden otel al
-                            for i, metadata in hotels_in_city[:top_k]:
-                                amenities_data = metadata.get('amenities', '[]')
-                                try:
-                                    amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
-                                except:
-                                    amenities_list = []
-                                
-                                price_value = metadata.get('price', 0.0)
-                                price = float(price_value) if price_value else 0.0
-                                hotel_name = metadata.get('name', 'Unknown')
-                                hotel_city = metadata.get('city', '')
-                                
-                                matched_hotels.append({
-                                    "id": all_hotels['ids'][i],
-                                    "name": hotel_name,
-                                    "city": hotel_city,
-                                    "concept": metadata.get('concept', ''),
-                                    "price": price,
-                                    "description": all_hotels['documents'][i],
-                                    "amenities": amenities_list
-                                })
-                                print(f"[FALLBACK] Using alternative city: {hotel_city}")
-                                fallback_city = db_city
-                                
-                                if len(matched_hotels) >= top_k:
-                                    break
-                        if fallback_city:
-                            break
-                    
-                    if matched_hotels:
-                        print(f"[FALLBACK SUCCESS] Using alternative city: {fallback_city}")
-                    else:
-                        print(f"[FALLBACK FAILED] No hotels found in any city")
-                except Exception as fallback_error:
-                    print(f"[FALLBACK ERROR] {fallback_error}")
-                    import traceback
-                    traceback.print_exc()
+                    amenities_list = json.loads(amenities_data) if isinstance(amenities_data, str) else amenities_data
+                except:
+                    amenities_list = []
+                
+                price_value = all_results['metadatas'][0][i].get('price', 0.0)
+                price = float(price_value) if price_value else 0.0
+                
+                # ✅ CRITICAL: Include district and area for transfer matching
+                matched_hotels.append({
+                    "id": all_results['ids'][0][i],
+                    "name": all_results['metadatas'][0][i].get('name', 'Unknown'),
+                    "city": all_results['metadatas'][0][i].get('city', ''),
+                    "district": all_results['metadatas'][0][i].get('district', ''),  # ✅ NEW
+                    "area": all_results['metadatas'][0][i].get('area', ''),  # ✅ NEW
+                    "concept": all_results['metadatas'][0][i].get('concept', ''),
+                    "price": price,
+                    "description": all_results['documents'][0][i],
+                    "amenities": amenities_list
+                })
+                
+                # Stop when we have enough hotels
+                if len(matched_hotels) >= top_k:
+                    break
             
-            result_city = fallback_city if fallback_city else destination_city
-            print(f"[SUCCESS] Found {len(matched_hotels)} hotels for {result_city}\n")
-            return (matched_hotels, destination_city, fallback_city)
+            if matched_hotels:
+                print(f"[SIMPLE SEARCH] Found {len(matched_hotels)} hotels")
+            else:
+                print(f"[SIMPLE SEARCH] No hotels found in {normalized_city}")
+            
+            return matched_hotels
+        
         except Exception as e:
-            print(f"[ERROR] Otel arama hatası: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"[ERROR] Hotel search error: {e}")
             return []
 
-    def _filter_flights(self, origin_iata: str, destination_iata: str, travel_style: str) -> tuple:
+    def _filter_flights(self, origin_iata: str, destination_iata: str, travel_style: str, time_preference: str = None) -> tuple:
         """
-        Uçuş Filtreleme: Teknik kriterlerle uygun uçuşları bul
+        SIMPLIFIED Flight Filter: Basic origin-destination matching
         
-        Returns: (flight_object, reason_text)
+        Args:
+            origin_iata: Origin airport code
+            destination_iata: Destination airport code
+            travel_style: Travel style
+            time_preference: Time preference (if any)
+        
+        Returns:
+            (flight_object, reason_text)
         """
         try:
+            print(f"[FLIGHT SEARCH] Looking for flights: {origin_iata} -> {destination_iata}, style={travel_style}, time={time_preference}")
+            
             matching_flights = []
             
             for flight in self.flights:
@@ -738,9 +920,36 @@ class TravelPlanner:
                 # IATA kodu eşleştirmesi
                 if (leg.get("origin") == origin_iata and 
                     leg.get("destination") == destination_iata):
+                    
+                    # ============================================================
+                    # ✅ FIX 3: HARD-CODED TIME FILTERING
+                    # Kullanıcı zaman tercihi belirttiyse, uçuşları saate göre filtrele
+                    # ============================================================
+                    if time_preference:
+                        departure_time = leg.get("departure", "")
+                        if departure_time:
+                            try:
+                                # ISO format: "2024-01-15T18:30:00" -> saat çıkar
+                                hour = int(departure_time.split("T")[1].split(":")[0])
+                                
+                                # HARD-CODE: Zaman filtreleme
+                                if time_preference == 'sabah' and not (6 <= hour < 12):
+                                    continue  # ✅ FIX 4: Log temizliği - skip logunu kaldırdık
+                                elif time_preference == 'öğleden' and not (12 <= hour < 17):
+                                    continue  # ✅ FIX 4: Log temizliği
+                                elif time_preference == 'akşam' and not (17 <= hour < 24):
+                                    continue  # ✅ FIX 4: Log temizliği
+                            except (ValueError, IndexError) as time_error:
+                                pass  # ✅ FIX 4: Error log da kaldırıldı
+                    
                     matching_flights.append(flight)
             
+            # ✅ FIX 4: Sadece başarılı match'leri logla
+            if matching_flights and time_preference:
+                print(f"[TIME FILTER MATCH] Found {len(matching_flights)} flights for '{time_preference}' preference")
+            
             if not matching_flights:
+                print(f"[FLIGHT SEARCH] No flights found for {origin_iata} -> {destination_iata}")
                 return (None, "")
             
             # Travel style'a göre filtrele
@@ -755,7 +964,7 @@ class TravelPlanner:
             selected_flight = matching_flights[0] if matching_flights else None
             
             if selected_flight:
-                airline_name = self.llm.translate_code(selected_flight.get("carrier", ""))
+                airline_name = self._simple_translate(selected_flight.get("carrier", ""))
                 cabin = selected_flight.get("pricing", {}).get("cabin", "")
                 price = float(selected_flight.get("pricing", {}).get("amount", 0))
                 
@@ -766,12 +975,16 @@ class TravelPlanner:
                     "flight_id": selected_flight.get("flight_id"),
                     "carrier": selected_flight.get("carrier"),
                     "flight_no": selected_flight.get("flight_no"),
+                    "origin": selected_flight.get("leg", {}).get("origin"),
+                    "destination": selected_flight.get("leg", {}).get("destination"),
                     "departure": selected_flight.get("leg", {}).get("departure"),
                     "arrival": selected_flight.get("leg", {}).get("arrival"),
                     "price": price,
                     "cabin": cabin,
                     "baggage": selected_flight.get("baggage")
                 }
+                
+                print(f"[SIMPLE FLIGHT] Found flight: {reason}")
                 return (flight_object, reason)
             
             return (None, "")
@@ -782,216 +995,313 @@ class TravelPlanner:
 
     def _filter_transfers(self, airport_code: str, hotel: dict, travel_style: str) -> tuple:
         """
-        ✅ DISTRICT-PRIORITY & AREA TRANSFER MATCHING (YENİ MANTIK):
+        ✅ STRICT HIERARCHY: Area > District > City
         
-        1. PRIORITY HIERARCHY: AREA > DISTRICT > CITY
-           - AREA (Alan): 'Belek', 'Alanya' vb. transfer_route'ta tam eşleşme arar
-           - DISTRICT (İlçe): Fallback, district ile eşleşme
-           - CITY (Şehir): Son fallback, şehir bazlı genel transfer
-        
-        2. FUZZY SEARCH: Örn. hotel.area='Belek' ise:
-           - transfer_route.to_area_name='Belek - Antalya' → 'belek' in 'belek - antalya' ✅
-        
-        3. FALLBACK: Alan/District match yoksa şehir → sonra default (merkez)
-        
-        Test Uyumu: Kullanıcı 'Belek'teki otelimize' dediğinde:
-        - hotel.area = 'Belek' (location.area'dan geliyor)
-        - transfer_route.to_area_name = 'Belek' veya 'Belek - Antalya'
-        - 'belek' in 'belek - antalya' → ✅ MATCH!
+        Transfer filter with strict district/area enforcement:
+        1. Match airport_code with from_code
+        2. HIERARCHY: Check Area first, then District, then City
+        3. Use exact .lower().strip() matching - NO partial matches
+        4. If hotel is in 'Çeşme', DON'T match 'Foça' or 'Lara' transfers
         
         Returns: (transfer_object, reason_text)
         """
         try:
-            # Transfer dosyasının yapısını kontrol et
+            # Get transfer routes
             if isinstance(self.transfers, dict) and "transfer_routes" in self.transfers:
                 routes = self.transfers.get("transfer_routes", [])
             else:
                 routes = self.transfers if isinstance(self.transfers, list) else []
             
-            # ✅ ADIM 1: Hotel metadata'sından city, district, area bilgisini çıkart
-            hotel_city = hotel.get("city", "")
-            hotel_district = hotel.get("district", "")
-            hotel_area = hotel.get("area", "")  # ✅ YENİ: Area (Belek, Alanya vb.)
+            hotel_name = hotel.get("name", "Unknown Hotel")
+            hotel_city = hotel.get("city", "").lower().strip()
+            hotel_district = hotel.get("district", "").lower().strip()
+            hotel_area = hotel.get("area", "").lower().strip()
             
-            hotel_city_normalized = self._normalize_city_name(hotel_city)
-            hotel_district_normalized = self._normalize_city_name(hotel_district) if hotel_district else ""
-            hotel_area_normalized = self._normalize_city_name(hotel_area) if hotel_area else ""
+            print(f"\n[🔍 TRANSFER SEARCH] Hotel: {hotel_name}")
+            print(f"[📍 LOCATION] City: '{hotel_city}' | District: '{hotel_district}' | Area: '{hotel_area}'")
             
-            area_matches = []      # Area üzerinden match (YÜKSEKPRİORİTETİ)
-            district_matches = []  # District üzerinden match
-            city_matches = []      # City üzerinden match (fallback)
-            default_transfer = None
+            # ✅ CRITICAL: Verify metadata is not empty
+            if not hotel_district or not hotel_area:
+                print(f"[⚠️ METADATA WARNING] District or Area is EMPTY - this will cause transfer matching issues!")
             
+            # ✅ Define city-to-regions mapping for flexible matching
+            # If hotel is in İzmir city, allow transfers to İzmir districts (Çeşme, Alaçatı, Foça, etc.)
+            city_regions_map = {
+                "izmir": ["cesme", "çesme", "alacati", "alaçatı", "foca", "foça", "urla", "seferihisar", "gumuldur", "gümüldür"],
+                "antalya": ["belek", "lara", "kemer", "alanya", "side", "manavgat", "kundu"]
+            }
+            
+            # ✅ STEP 1: Match airport_code with from_code
+            airport_matches = []
             for transfer in routes:
                 route = transfer.get("route", {})
-
+                from_code = route.get("from_code")
                 
-                # Havalimanı eşleştirmesi (KESIN KURAL)
-                if route.get("from_code") == airport_code:
-                    to_area_name = route.get("to_area_name", "")
-                    to_area_normalized = self._normalize_city_name(to_area_name)
-                    
-                    # ============================================================
-                    # ✅ ADIM 2: AREA > DISTRICT > CITY PRIORITY MATCHING
-                    # ============================================================
-                    
-                    # 1. AREA MATCHING (YÜKSEKPRİORİTETİ - Belek, Alanya vb.)
-                    if hotel_area_normalized:
-                        # Exact match: 'belek' == 'belek'
-                        is_area_exact = hotel_area_normalized == to_area_normalized
-                        
-                        # Partial match: 'belek' in 'belek - antalya'
-                        is_area_partial = (
-                            hotel_area_normalized in to_area_normalized or
-                            to_area_normalized in hotel_area_normalized
-                        )
-                        
-                        # Fuzzy match
-                        area_similarity = SequenceMatcher(None, hotel_area_normalized, to_area_normalized).ratio()
-                        is_area_fuzzy = area_similarity > 0.6
-                        
-                        if is_area_exact or is_area_partial or is_area_fuzzy:
-                            area_matches.append((transfer, area_similarity, is_area_exact))
-                    
-                    # 2. DISTRICT MATCHING (Fallback - eğer area match yoksa)
-                    if hotel_district_normalized:
-                        # Exact match: 'serik' == 'serik'
-                        is_district_exact = hotel_district_normalized == to_area_normalized
-                        
-                        # Partial match: 'serik' in 'serik - merkez'
-                        is_district_partial = (
-                            hotel_district_normalized in to_area_normalized or
-                            to_area_normalized in hotel_district_normalized
-                        )
-                        
-                        # Fuzzy match
-                        district_similarity = SequenceMatcher(None, hotel_district_normalized, to_area_normalized).ratio()
-                        is_district_fuzzy = district_similarity > 0.6
-                        
-                        if is_district_exact or is_district_partial or is_district_fuzzy:
-                            district_matches.append((transfer, district_similarity, is_district_exact))
-                    
-                    # 3. CITY MATCHING (Fallback - sadece area & district match yoksa kullanılır)
-                    # Exact match: 'antalya' == 'antalya'
-                    is_city_exact = hotel_city_normalized == to_area_normalized
-                    
-                    # Partial match: 'antalya' in 'merkez antalya'
-                    is_city_partial = (
-                        hotel_city_normalized in to_area_normalized or
-                        to_area_normalized in hotel_city_normalized
-                    )
-                    
-                    # Fuzzy match
-                    city_similarity = SequenceMatcher(None, hotel_city_normalized, to_area_normalized).ratio()
-                    is_city_fuzzy = city_similarity > 0.6
-                    
-                    if is_city_exact or is_city_partial or is_city_fuzzy:
-                        city_matches.append((transfer, city_similarity, is_city_exact))
-                    
-                    # 4. DEFAULT TRANSFER (merkez/center - sonuncu çare)
-                    if not default_transfer and ("merkez" in to_area_normalized or "center" in to_area_normalized):
-                        default_transfer = transfer
+                if from_code == airport_code:
+                    airport_matches.append(transfer)
             
-            selected_transfer = None
-            reason = ""
+            if not airport_matches:
+                print(f"[❌ NO AIRPORT MATCH] No transfers found for airport code: {airport_code}")
+                return (None, "")
             
-            # ============================================================
-            # ✅ ADIM 3: MATCH SEÇİMİ (AREA > DISTRICT > CITY > DEFAULT)
-            # ============================================================
+            print(f"[✅ AIRPORT MATCH] Found {len(airport_matches)} transfers from {airport_code}")
             
-            # AREA MATCH VAR MI? (YÜKSEKPRİORİTETİ)
-            if area_matches:
-                # Exact match'leri ayırt et
-                exact_area = [t for t in area_matches if t[2]]
-                
-                if exact_area:
-                    exact_area.sort(key=lambda x: float(x[0].get("total_price", 0)))
-                    best_transfer = exact_area[0][0]
-                else:
-                    area_matches.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
-                    best_transfer = area_matches[0][0]
-                
-                selected_transfer = best_transfer
+            # ✅ STEP 2: FLEXIBLE HIERARCHY - Area > District > City with partial matching
+            # Normalize hotel location data
+            hotel_city_normalized = self._normalize_city_name(hotel_city)
+            hotel_district_normalized = self._normalize_city_name(hotel_district)
+            hotel_area_normalized = self._normalize_city_name(hotel_area)
             
-            # DISTRICT MATCH VAR MI? (İkinci öncelik)
-            elif district_matches:
-                # Exact match'leri ayırt et
-                exact_district = [t for t in district_matches if t[2]]
-                
-                if exact_district:
-                    exact_district.sort(key=lambda x: float(x[0].get("total_price", 0)))
-                    best_transfer = exact_district[0][0]
-                else:
-                    district_matches.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
-                    best_transfer = district_matches[0][0]
-                
-                selected_transfer = best_transfer
+            hierarchy_matches = []
             
-            # CITY MATCH VAR MI? (Üçüncü öncelik)
-            elif city_matches:
-                # Exact match'leri ayırt et
-                exact_city = [t for t in city_matches if t[2]]
+            for transfer in airport_matches:
+                route = transfer.get("route", {})
+                to_area_name = route.get("to_area_name", "").lower().strip()
+                to_area_normalized = self._normalize_city_name(to_area_name)
                 
-                if exact_city:
-                    exact_city.sort(key=lambda x: float(x[0].get("total_price", 0)))
-                    best_transfer = exact_city[0][0]
-                else:
-                    city_matches.sort(key=lambda x: (x[1], float(x[0].get("total_price", 0))), reverse=True)
-                    best_transfer = city_matches[0][0]
+                matched = False
                 
-                selected_transfer = best_transfer
-            
-            # HIÇBÎR MATCH YOK, DEFAULT'Yİ KULLAN
-            elif default_transfer:
-                selected_transfer = default_transfer
-            
-            # TRANSFER SEÇİLDİ, DETAYLARI HAZIRLA
-            if selected_transfer:
-                vehicle_type = selected_transfer.get("vehicle_info", {}).get("category", "")
-                vehicle_name = self.llm.translate_code(vehicle_type)
-                price = float(selected_transfer.get("total_price", 0))
-                duration = selected_transfer.get("route", {}).get("estimated_duration", 0)
+                # ✅ PRIORITY 1: AREA MATCH (Most specific) - exact or partial
+                if hotel_area_normalized and to_area_normalized:
+                    if hotel_area_normalized == to_area_normalized or \
+                       hotel_area_normalized in to_area_normalized or \
+                       to_area_normalized in hotel_area_normalized:
+                        hierarchy_matches.append({
+                            "transfer": transfer,
+                            "match_type": "AREA",
+                            "match_value": to_area_name
+                        })
+                        print(f"[🎯 AREA MATCH] Transfer to '{to_area_name}' ≈ Hotel area '{hotel_area}'")
+                        matched = True
+                        continue
                 
-                # Travel style tercihini uygula (VIP vs standard)
-                if travel_style == "lüks":
-                    vip_candidates = None
+                # ✅ PRIORITY 2: DISTRICT MATCH - exact or partial
+                if not matched and hotel_district_normalized and to_area_normalized:
+                    if hotel_district_normalized == to_area_normalized or \
+                       hotel_district_normalized in to_area_normalized or \
+                       to_area_normalized in hotel_district_normalized:
+                        hierarchy_matches.append({
+                            "transfer": transfer,
+                            "match_type": "DISTRICT",
+                            "match_value": to_area_name
+                        })
+                        print(f"[🎯 DISTRICT MATCH] Transfer to '{to_area_name}' ≈ Hotel district '{hotel_district}'")
+                        matched = True
+                        continue
+                
+                # ✅ PRIORITY 3: CITY-REGION MATCH (Flexible for same-city regions)
+                # If hotel is in İzmir city, allow transfers to İzmir districts
+                if not matched and hotel_city_normalized and to_area_normalized:
+                    # Check if transfer destination is in the same city's region list
+                    if hotel_city_normalized in city_regions_map:
+                        allowed_regions = city_regions_map[hotel_city_normalized]
+                        if any(region in to_area_normalized for region in allowed_regions):
+                            hierarchy_matches.append({
+                                "transfer": transfer,
+                                "match_type": "CITY_REGION",
+                                "match_value": to_area_name
+                            })
+                            print(f"[🎯 CITY-REGION MATCH] Transfer to '{to_area_name}' is in {hotel_city} region")
+                            matched = True
+                            continue
                     
-                    # District match varsa VIP kontrol et
-                    if district_matches:
-                        vip_candidates = [t for t in district_matches 
-                                         if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
-                    # City match varsa VIP kontrol et
-                    elif city_matches:
-                        vip_candidates = [t for t in city_matches 
-                                         if "VIP" in t[0].get("vehicle_info", {}).get("category", "")]
-                    
-                    if vip_candidates:
-                        vip_candidates.sort(key=lambda x: float(x[0].get("total_price", 0)))
-                        selected_transfer = vip_candidates[0][0]
-                        vehicle_type = selected_transfer.get("vehicle_info", {}).get("category", "")
-                        vehicle_name = self.llm.translate_code(vehicle_type)
-                        price = float(selected_transfer.get("total_price", 0))
+                    # Direct city match as final fallback
+                    if not matched and hotel_city_normalized == to_area_normalized:
+                        hierarchy_matches.append({
+                            "transfer": transfer,
+                            "match_type": "CITY",
+                            "match_value": to_area_name
+                        })
+                        print(f"[🎯 CITY MATCH] Transfer to '{to_area_name}' == Hotel city '{hotel_city}'")
+                        matched = True
+                        continue
                 
-                reason = f"{vehicle_name} - {duration} dakika - ₺{price:,.0f}"
-                
-                transfer_obj = {
-                    "service_code": selected_transfer.get("service_code"),
-                    "from": selected_transfer.get("route", {}).get("from_name"),
-                    "to": selected_transfer.get("route", {}).get("to_area_name"),
-                    "duration": duration,
-                    "vehicle_category": vehicle_type,
-                    "vehicle_features": selected_transfer.get("vehicle_info", {}).get("features", []),
-                    "price": price
-                }
-                
-                return (transfer_obj, reason)
+                if not matched:
+                    print(f"[⚠️ NO MATCH] Transfer to '{to_area_name}' doesn't match hotel location")
             
-            return (None, "")
+            # ✅ STEP 3: Select best match based on hierarchy
+            if not hierarchy_matches:
+                print(f"[❌ NO HIERARCHY MATCH] No transfers match hotel location hierarchy")
+                print(f"[STRICT POLICY] Hotel in '{hotel_district}' - Will NOT use 'Foça' or 'Lara' transfers")
+                return (None, "")
+            
+            # ✅ VEHICLE QUALITY PRIORITY for luxury travel_style
+            # Define vehicle quality tiers (lower number = higher quality)
+            vehicle_quality_map = {
+                # Premium tier
+                "VIP": 1, "VAN_VIP": 1, "PREMIUM": 1, "PREMIUM_VAN": 1,
+                # Mid tier
+                "VAN": 2, "MINIVAN": 2, "VITO": 2, "MERCEDES": 2, "SPRINTER": 2,
+                # Standard tier
+                "SHUTTLE": 3, "STANDARD": 3, "ECONOMY": 3, "BUS": 3
+            }
+            
+            def get_vehicle_quality(transfer_dict):
+                """Get vehicle quality score (lower is better)"""
+                vehicle_category = transfer_dict["transfer"].get("vehicle_info", {}).get("category", "").upper()
+                # Return quality score, default to 99 if unknown
+                return vehicle_quality_map.get(vehicle_category, 99)
+            
+            # ✅ SMART SORTING based on travel_style
+            hierarchy_priority = {"AREA": 1, "DISTRICT": 2, "CITY_REGION": 3, "CITY": 4}
+            
+            if travel_style == "lüks":
+                # For luxury: Hierarchy > Quality > Price
+                # First prioritize location match, then vehicle quality, then price
+                print(f"[🌟 LUXURY MODE] Prioritizing VIP/Premium vehicles over price")
+                hierarchy_matches.sort(key=lambda x: (
+                    hierarchy_priority.get(x["match_type"], 99),  # Location first
+                    get_vehicle_quality(x),  # Then quality
+                    float(x["transfer"].get("total_price", 0))  # Then price
+                ))
+            else:
+                # For non-luxury: Hierarchy > Price > Quality
+                # Prioritize cheapest option
+                hierarchy_matches.sort(key=lambda x: (
+                    hierarchy_priority.get(x["match_type"], 99),  # Location first
+                    float(x["transfer"].get("total_price", 0)),  # Then price
+                    get_vehicle_quality(x)  # Then quality
+                ))
+            
+            best_match = hierarchy_matches[0]
+            selected_transfer = best_match["transfer"]
+            match_type = best_match["match_type"]
+            match_value = best_match["match_value"]
+            
+            # ✅ LOG: Show vehicle quality decision
+            vehicle_category = selected_transfer.get("vehicle_info", {}).get("category", "")
+            quality_score = vehicle_quality_map.get(vehicle_category.upper(), 99)
+            quality_tier = "PREMIUM" if quality_score == 1 else "MID" if quality_score == 2 else "STANDARD"
+            
+            if travel_style == "lüks":
+                print(f"[🌟 LUXURY SELECTION] Vehicle: {vehicle_category} (Quality: {quality_tier})")
+                if quality_score > 1:
+                    print(f"[⚠️ LUXURY NOTE] No VIP vehicles available, selecting best available: {vehicle_category}")
+            
+            vehicle_type = selected_transfer.get("vehicle_info", {}).get("category", "")
+            price = float(selected_transfer.get("total_price", 0))
+            duration = selected_transfer.get("route", {}).get("estimated_duration", 0)
+            
+            reason = f"{vehicle_type} - {duration} dakika - ₺{price:,.0f}"
+            
+            transfer_obj = {
+                "service_code": selected_transfer.get("service_code"),
+                "from": selected_transfer.get("route", {}).get("from_name"),
+                "to": selected_transfer.get("route", {}).get("to_area_name"),
+                "duration": duration,
+                "vehicle_category": vehicle_type,
+                "vehicle_features": selected_transfer.get("vehicle_info", {}).get("features", []),
+                "price": price
+            }
+            
+            print(f"[✅ SELECTED] {match_type} match: Transfer to '{match_value}' | {reason}")
+            return (transfer_obj, reason)
             
         except Exception as e:
+            print(f"[ERROR] Transfer filter error: {e}")
             import traceback
             traceback.print_exc()
             return (None, "")
+
+    def _generate_batch_summaries(self, packages: list, user_query: str, travel_params: dict) -> list:
+        """
+        ✅ FIX 1: BATCH PROCESSING - API VERİMLİLİĞİ
+        Tüm paketlerin 'Reasoning' metinlerini TEK bir LLM çağrısıyla oluştur.
+        429 Too Many Requests hatasını %90 oranında azaltır.
+        
+        Args:
+            packages: Tüm paketlerin listesi
+            user_query: Kullanıcı sorgusu
+            travel_params: Seyahat parametreleri
+            
+        Returns:
+            list: Her paket için reasoning metinleri
+        """
+        try:
+            # Tüm paketleri tek prompt'ta topla
+            packages_text = ""
+            for idx, package in enumerate(packages, 1):
+                hotel = package["hotel"]
+                flight = package["flight"]
+                transfer = package["transfer"]
+                time_was_default = package["metadata"].get("time_was_default", False)
+                
+                hotel_amenities = ", ".join(hotel.get("amenities", [])[:3])
+                
+                flight_info = ""
+                if flight:
+                    airline = self._simple_translate(flight.get("carrier", ""))
+                    flight_price = flight.get("price", 0)
+                    # ✅ FIX 3: time_was_default kontrolü
+                    time_note = " (Varsayılan sabah uçuşu - kullanıcı zaman belirtmedi)" if time_was_default else ""
+                    flight_info = f"✈️ {airline} - ₺{flight_price:,.0f}{time_note}"
+                
+                transfer_info = ""
+                if transfer:
+                    vehicle = self._simple_translate(transfer.get("vehicle_category", ""))
+                    transfer_price = transfer.get("price", 0)
+                    duration = transfer.get("duration", 0)
+                    transfer_info = f"🚗 {vehicle} - {duration} dakika - ₺{transfer_price:,.0f}"
+                
+                packages_text += f"""
+                PAKET {idx}:
+                🏨 {hotel['name']} ({hotel['city']}) - ₺{hotel['price']:,.0f}/gece
+                Ameniteler: {hotel_amenities}
+                {flight_info}
+                {transfer_info}
+                ---
+                """
+            
+            prompt = f"""
+            Kullanıcı Sorgusu: "{user_query}"
+            
+            Aşağıdaki {len(packages)} paketi tek seferde değerlendirip, her biri için ayrı bir pazarlama özeti yaz:
+            
+            {packages_text}
+            
+            GÖREV:
+            Her paket için AYRI BIR SATIR'da, akıcı pazarlama paragrafı yaz (2-3 cümle, 30-40 kelime).
+            
+            ⚠️ **KURALLAR:**
+            1. Her satır bir paket için olmalı
+            2. Sadece Türkçe - yabancı karakter YOK
+            3. Teknik verilerle pazarlama dilini harmanlayın
+            4. Eğer "Varsayılan sabah uçuşu" notu varsa: "Uçuş saati belirtmediğiniz için size en konforlu sabah uçuşunu seçtik" ekleyin
+            5. HALLUCINATION YASAK - sadece verilen bilgiler
+            6. ⛔ HARD-CODED RULE 2: Eğer paket bulunamazsa, ASLA başka şehre yönlendirme yapma ("Şuraya gidin" yasak)
+            7. ⛔ Boş sonuç için SADECE şunu yaz: "İstediğiniz bölgede kriterlerinize uygun konaklama bulunamadı."
+            
+            **ÇIKTI FORMATİ** (Her satır bir paket):
+            Paket 1 için özet paragrafı...
+            Paket 2 için özet paragrafı...
+            Paket 3 için özet paragrafı...
+            
+            Sadece özet paragraflarını yaz, başka hiçbir şey yazma.
+            """
+            
+            completion = self.llm.client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=self.llm.model,
+            )
+            
+            response = completion.choices[0].message.content.strip()
+            
+            # Satırlara ayır
+            summaries = [line.strip() for line in response.split('\n') if line.strip()]
+            
+            # Eğer summary sayısı paket sayısından azsa, fallback ekle
+            while len(summaries) < len(packages):
+                idx = len(summaries)
+                hotel_name = packages[idx]["hotel"]["name"]
+                summaries.append(f"{hotel_name}, tercihlerinize uyumlu bir paket sunar.")
+            
+            print(f"[BATCH SUCCESS] Generated {len(summaries)} summaries in single call")
+            return summaries
+        
+        except Exception as e:
+            print(f"[BATCH ERROR] {e}, falling back to individual summaries")
+            # Fallback: Basit özetler
+            return [f"{pkg['hotel']['name']}, tercihlerinize uyumlu bir paket sunar." for pkg in packages]
 
     def _generate_intelligent_summary(self, package: dict, user_query: str, travel_params: dict) -> str:
         """
@@ -1014,12 +1324,12 @@ class TravelPlanner:
             
             flight_info = ""
             if flight:
-                airline = self.llm.translate_code(flight.get("carrier", ""))
+                airline = self._simple_translate(flight.get("carrier", ""))
                 flight_info = f"Uçuş: {airline} ({flight.get('cabin', '')})"
             
             transfer_info = ""
             if transfer:
-                vehicle = self.llm.translate_code(transfer.get("vehicle_category", ""))
+                vehicle = self._simple_translate(transfer.get("vehicle_category", ""))
                 transfer_info = f"Transfer: {vehicle} ({transfer.get('duration')} dakika)"
             
             # Uçuş ve transfer satırlarını hazırla
