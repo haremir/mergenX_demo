@@ -1,4 +1,3 @@
-```markdown
 # MergenX: Intelligent Travel Planning Engine (v1.2.0)
 
 **MergenX** is an advanced **NLP-based search engine** that analyzes user intent, harmonizes geographic constraints with logistical intelligence, and delivers personalized travel packages (Hotel + Flight + Transfer).
