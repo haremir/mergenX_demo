@@ -564,17 +564,85 @@ class TravelPlanner:
             search_query = ' '.join(search_parts) if search_parts else destination_city
             print(f"[SEARCH QUERY] city='{destination_city}', concept='{concept}', query='{search_query}'")
             
-            hotels = self._search_hotels_simple(search_query, destination_city, top_k)
+            # ============================================================
+            # 🔄 DYNAMIC CITY DIVERSITY LOOP (şehir belirtilmediğinde)
+            # ============================================================
+            if not city_explicitly_specified:
+                # Döngüsel algoritma: 3 farklı şehir bulana kadar ara
+                selected_cities = set()
+                all_hotels_pool = []
+                current_search_limit = top_k * 3  # İlk arama: 9 otel
+                max_search_limit = 50  # Maksimum arama limiti
+                
+                print(f"[🔄 DYNAMIC SEARCH] Şehir belirtilmedi, 3 farklı şehir aranıyor...")
+                
+                while len(selected_cities) < 3 and current_search_limit <= max_search_limit:
+                    # Vektör DB'den daha fazla otel çek (TÜM ŞEHİRLERDEN - destination_city='bilinmiyor')
+                    hotels_batch = self._search_hotels_simple(search_query, 'bilinmiyor', current_search_limit)
+                    
+                    if not hotels_batch:
+                        print(f"[⚠️ EXHAUSTED] Veritabanında daha fazla otel bulunamadı")
+                        break
+                    
+                    # Yeni otelleri pool'a ekle (duplicate kontrolü)
+                    existing_ids = {h.get('id') for h in all_hotels_pool}
+                    for hotel in hotels_batch:
+                        if hotel.get('id') not in existing_ids:
+                            all_hotels_pool.append(hotel)
+                            existing_ids.add(hotel.get('id'))
+                    
+                    # Pool'daki otelleri incele ve farklı şehirlerden seç
+                    for hotel in all_hotels_pool:
+                        hotel_city = hotel.get('city', '')
+                        if hotel_city and hotel_city not in selected_cities:
+                            selected_cities.add(hotel_city)
+                            print(f"[✅ CITY FOUND] '{hotel_city}' şehri eklendi ({len(selected_cities)}/3)")
+                            
+                            if len(selected_cities) >= 3:
+                                break
+                    
+                    # Eğer 3 şehir bulunamazsa, aramayı genişlet
+                    if len(selected_cities) < 3:
+                        current_search_limit += 10
+                        print(f"[🔄 EXPANDING] 3 şehir bulunamadı, arama genişletiliyor: {current_search_limit}")
+                    else:
+                        break
+                
+                # Şimdi pool'dan her şehirden en iyi otelleri seç (round-robin)
+                hotels = []
+                selected_city_list = list(selected_cities)
+                city_hotel_map = {city: [] for city in selected_city_list}
+                
+                # Otelleri şehirlere göre grupla
+                for hotel in all_hotels_pool:
+                    hotel_city = hotel.get('city', '')
+                    if hotel_city in city_hotel_map:
+                        city_hotel_map[hotel_city].append(hotel)
+                
+                # Round-robin: Her şehirden sırayla top_k kadar otel al
+                for i in range(top_k):
+                    for city in selected_city_list:
+                        if i < len(city_hotel_map[city]):
+                            hotels.append(city_hotel_map[city][i])
+                            if len(hotels) >= top_k:
+                                break
+                    if len(hotels) >= top_k:
+                        break
+                
+                print(f"[🌍 DIVERSITY SUCCESS] {len(selected_cities)} farklı şehirden {len(hotels)} otel seçildi")
+                
+            else:
+                # Kullanıcı şehir belirttiyse, normal arama yap
+                hotels = self._search_hotels_simple(search_query, destination_city, top_k)
             
             # ✅ FIX 4: KILL FALLBACK - No alternative cities, no jumping
-            # If user requested İzmir and no hotels found, return empty - DON'T jump to Antalya
             if not hotels:
                 if city_explicitly_specified:
                     strict_message = f"İstediğiniz bölgede ({destination_city}) kriterlerinize uygun konaklama bulunamadı. Lütfen farklı bir şehir veya kriter deneyin."
                     print(f"[🔒 STRICT CITY LOCK] User explicitly requested {destination_city}, no hotels found - NO FALLBACK")
                 else:
                     strict_message = f"Kriterlerinize uygun konaklama bulunamadı. Lütfen farklı bir kriter deneyin."
-                    print(f"[✅ NO FALLBACK] No hotels found for inferred city {destination_city}")
+                    print(f"[✅ NO FALLBACK] No hotels found")
                 return ([], strict_message)
             
             # ============================================================
@@ -587,6 +655,9 @@ class TravelPlanner:
                 try:
                     # Debug: Intent kontrolü
                     print(f"[DEBUG] Processing hotel {idx}, intent={intent}")
+                    
+                    # 🎯 AKILLI HAVALİMANI SEÇİMİ: Otelin ilçesine göre doğru havalimanını belirle
+                    smart_destination_iata = self._get_smart_airport_code(hotel)
                     
                     # Uçuş filtrele
                     flight = None
@@ -602,34 +673,58 @@ class TravelPlanner:
                             time_was_default = True
                             print(f"[SMART DEFAULT] No time preference specified, defaulting to 'sabah'")
                         
+                        # 🎯 KULLAN: smart_destination_iata (otelin ilçesine göre belirlenen havalimanı)
                         flight, flight_reason = self._filter_flights(
                             origin_iata=origin_iata,
-                            destination_iata=destination_iata,
+                            destination_iata=smart_destination_iata,  # 🎯 DİNAMİK IATA!
                             travel_style=travel_style,
                             time_preference=time_preference
                         )
                         
-                        # HARD-CODED RULE 3: Airport-City Sync - flight destination must 100% match hotel city
-                        # ⛔ If flight destination code (AYT) doesn't match hotel city (Antalya), skip this flight
+                        # 🌍 RELAXED REGIONAL MAPPING: Airport-City-District Validation
+                        # Artık katı string eşleşmesi yok, bölgesel mantık var
                         if flight:
                             flight_dest = flight.get("destination", "")
-                            hotel_city_name = hotel.get("city", "")
+                            hotel_city_name = self._normalize_city_name(hotel.get("city", ""))
+                            hotel_district = self._normalize_city_name(hotel.get("district", ""))
                             
-                            # Map IATA codes to city names
-                            iata_to_city = {
-                                "AYT": "Antalya",
-                                "ADB": "İzmir",
-                                "BJV": "Bodrum",
-                                "DLM": "Dalaman",
-                                "GZT": "Gaziantep"
-                            }
-                            
-                            expected_city = iata_to_city.get(flight_dest, "")
-                            if expected_city and hotel_city_name:
-                                if self._normalize_city_name(expected_city) != self._normalize_city_name(hotel_city_name):
-                                    print(f"[HARD-CODED RULE 3] Airport-City mismatch: Flight {flight_dest} ({expected_city}) != Hotel city ({hotel_city_name}) - SKIPPING FLIGHT")
-                                    flight = None
-                                    flight_error = f"Uçuş-Otel şehir uyuşmazlığı: {flight_dest} ({expected_city}) != {hotel_city_name}"
+                            # ✅ PRIORITY 1: Smart airport selection zaten doğru IATA'yı seçti
+                            # Eğer smart_destination_iata == flight_dest ise, otomatik geçerli
+                            if flight_dest == smart_destination_iata:
+                                print(f"[✅ SMART MATCH] Flight {flight_dest} matches smart airport selection - VALID")
+                            else:
+                                # ✅ PRIORITY 2: Regional Mapping - Şehir bazlı gevşek kontrol
+                                # Muğla şehri için DLM ve BJV kabul et
+                                # Aydın şehri için ADB ve BJV kabul et
+                                regional_mapping = {
+                                    "mugla": ["DLM", "BJV"],  # Muğla için Dalaman veya Bodrum
+                                    "aydin": ["ADB", "BJV"],  # Aydın için İzmir veya Bodrum
+                                    "izmir": ["ADB"],
+                                    "antalya": ["AYT"],
+                                    "bodrum": ["BJV"],
+                                    "gaziantep": ["GZT"]
+                                }
+                                
+                                valid_airports = regional_mapping.get(hotel_city_name, [])
+                                
+                                if flight_dest not in valid_airports:
+                                    print(f"[⚠️ REGIONAL CHECK] Flight {flight_dest} not in valid list for {hotel_city_name}: {valid_airports}")
+                                    # District bazlı son şans kontrolü
+                                    if hotel_district:
+                                        district_mapping = {
+                                            "fethiye": "DLM", "oludeniz": "DLM", "marmaris": "DLM", "datca": "DLM",
+                                            "bodrum": "BJV", "didim": "BJV",
+                                            "cesme": "ADB", "alacati": "ADB", "kusadasi": "ADB"
+                                        }
+                                        expected_from_district = district_mapping.get(hotel_district, None)
+                                        if expected_from_district and flight_dest == expected_from_district:
+                                            print(f"[✅ DISTRICT OVERRIDE] Flight {flight_dest} valid for district {hotel_district}")
+                                        else:
+                                            print(f"[❌ MISMATCH] Flight {flight_dest} invalid for {hotel_city_name}/{hotel_district} - SKIPPING")
+                                            flight = None
+                                            flight_error = f"Bölgesel uyumsuzluk: {flight_dest} havalimanı {hotel_city_name} için uygun değil"
+                                else:
+                                    print(f"[✅ REGIONAL MATCH] Flight {flight_dest} valid for {hotel_city_name}")
                         
                         # Flight-Hotel şehir uyuşmazlığı kontrolü
                         if not flight and destination_iata != "IST":  # IST dışı destinasyonlar kritik
@@ -640,8 +735,9 @@ class TravelPlanner:
                     transfer = None
                     transfer_reason = ""
                     if intent.get("transfer"):
+                        # 🎯 KULLAN: smart_destination_iata (havalimanı-transfer tutarlılığı)
                         transfer, transfer_reason = self._filter_transfers(
-                            airport_code=destination_iata,
+                            airport_code=smart_destination_iata,  # 🎯 DİNAMİK IATA!
                             hotel=hotel,
                             travel_style=travel_style
                         )
@@ -662,7 +758,8 @@ class TravelPlanner:
                         "metadata": {
                             "travel_style": travel_style,
                             "preferences": preferences,
-                            "destination_iata": destination_iata,
+                            "destination_iata": smart_destination_iata,  # 🎯 DİNAMİK IATA
+                            "original_destination_iata": destination_iata,  # Orijinal kullanıcı tercihi
                             "origin_iata": origin_iata,
                             "time_was_default": time_was_default if intent.get("flight") else False  # ✅ FIX 3
                         },
@@ -786,6 +883,68 @@ class TravelPlanner:
         normalized = city.replace('İ', 'i').replace('I', 'ı')
         return normalized.lower().strip()
 
+    def _get_smart_airport_code(self, hotel: dict) -> str:
+        """
+        🎯 AKILLI HAVALİMANI SEÇİMİ (Dynamic IATA Mapping)
+        
+        Otelin ilçe/bölgesine göre en uygun havalimanını belirler:
+        - Fethiye, Ölüdeniz, Göcek, Marmaris, Datça -> DLM (Dalaman)
+        - Bodrum, Didim, Güllük -> BJV (Bodrum)
+        - Çeşme, Alaçatı, Urla, Kuşadası -> ADB (İzmir)
+        - Belek, Alanya, Kemer, Side -> AYT (Antalya)
+        
+        Args:
+            hotel: Otel metadata dict (city, district, area içerir)
+            
+        Returns:
+            IATA kodu (str): DLM, BJV, ADB, AYT
+        """
+        # Hotel location bilgilerini al ve normalize et
+        city = self._normalize_city_name(hotel.get("city", ""))
+        district = self._normalize_city_name(hotel.get("district", ""))
+        area = self._normalize_city_name(hotel.get("area", ""))
+        
+        # Tüm location bilgilerini birleştir (hiyerarşik kontrol için)
+        location_text = f"{city} {district} {area}".lower()
+        
+        # 🎯 KURAL 1: Dalaman Havalimanı (DLM) - Muğla'nın batı bölgeleri
+        dlm_regions = ['fethiye', 'oludeniz', 'ölüdeniz', 'gocek', 'göcek', 'marmaris', 'datca', 'datça', 'dalaman', 'mugla', 'muğla']
+        if any(region in location_text for region in dlm_regions):
+            print(f"[🎯 SMART AIRPORT] Hotel in {district or area} -> DLM (Dalaman)")
+            return "DLM"
+        
+        # 🎯 KURAL 2: Bodrum Havalimanı (BJV) - Muğla'nın kuzey bölgeleri
+        bjv_regions = ['bodrum', 'didim', 'gulluk', 'güllük', 'milas', 'turgutreis']
+        if any(region in location_text for region in bjv_regions):
+            print(f"[🎯 SMART AIRPORT] Hotel in {district or area} -> BJV (Bodrum)")
+            return "BJV"
+        
+        # 🎯 KURAL 3: İzmir Havalimanı (ADB) - İzmir ve çevresi
+        adb_regions = ['izmir', 'cesme', 'çeşme', 'alacati', 'alaçatı', 'urla', 'kusadasi', 'kuşadası', 'foca', 'foça', 'seferihisar']
+        if any(region in location_text for region in adb_regions):
+            print(f"[🎯 SMART AIRPORT] Hotel in {district or area} -> ADB (İzmir)")
+            return "ADB"
+        
+        # 🎯 KURAL 4: Antalya Havalimanı (AYT) - Antalya ve çevresi
+        ayt_regions = ['antalya', 'belek', 'alanya', 'kemer', 'side', 'manavgat', 'lara', 'kundu', 'serik']
+        if any(region in location_text for region in ayt_regions):
+            print(f"[🎯 SMART AIRPORT] Hotel in {district or area} -> AYT (Antalya)")
+            return "AYT"
+        
+        # 🎯 FALLBACK: Şehir bazlı varsayılan mapping
+        city_to_airport = {
+            "mugla": "DLM",  # Muğla varsayılan Dalaman
+            "muğla": "DLM",
+            "izmir": "ADB",
+            "antalya": "AYT",
+            "bodrum": "BJV",
+            "gaziantep": "GZT"
+        }
+        
+        default_airport = city_to_airport.get(city, "ADB")  # Ultimate fallback: ADB
+        print(f"[🎯 SMART AIRPORT FALLBACK] Hotel in {city} -> {default_airport} (city-based default)")
+        return default_airport
+
     def _clean_preferences(self, preferences: list) -> list:
         """
         Preferences'tan uçuş, transfer, bilet gibi irrelevant kelimeleri çıkar.
@@ -815,13 +974,68 @@ class TravelPlanner:
         
         return cleaned
 
+    def _apply_city_diversity(self, hotels: list, top_k: int) -> list:
+        """
+        🌍 CITY DIVERSITY LOGIC: İzmir Dominasyonunu Kır
+        
+        Kullanıcı şehir belirtmediğinde, sonuçların hepsi aynı şehirden gelmesin.
+        İlk sonuç İzmir ise, ikinci Muğla, üçüncü Antalya gibi farklı şehirlerden seç.
+        
+        Kural: Coğrafi çeşitlilik > %100 puanlı homojen sonuçlar
+        
+        Args:
+            hotels: Tüm otel listesi (vector search'ten gelen)
+            top_k: Kaç otel döndürülecek
+            
+        Returns:
+            Çeşitlendirilmiş otel listesi (max top_k adet)
+        """
+        if len(hotels) < 3:
+            return hotels[:top_k]
+        
+        # Otelleri şehirlere göre grupla
+        cities_to_hotels = {}
+        for hotel in hotels:
+            city = hotel.get("city", "bilinmiyor")
+            if city not in cities_to_hotels:
+                cities_to_hotels[city] = []
+            cities_to_hotels[city].append(hotel)
+        
+        # Şehir sayısı
+        num_cities = len(cities_to_hotels)
+        print(f"[🌍 DIVERSITY CHECK] Toplam {len(hotels)} otel, {num_cities} farklı şehir")
+        
+        # Eğer zaten çeşitlilik varsa (farklı şehirler varsa), round-robin uygula
+        if num_cities >= 2:
+            diverse_hotels = []
+            city_names = list(cities_to_hotels.keys())
+            
+            # Round-robin: Her şehirden sırayla bir otel al
+            max_iterations = max(len(hotels_list) for hotels_list in cities_to_hotels.values())
+            for i in range(max_iterations):
+                for city in city_names:
+                    if len(diverse_hotels) >= top_k:
+                        break
+                    if i < len(cities_to_hotels[city]):
+                        diverse_hotels.append(cities_to_hotels[city][i])
+                if len(diverse_hotels) >= top_k:
+                    break
+            
+            print(f"[🌍 DIVERSITY APPLIED] Round-robin: {[h['city'] for h in diverse_hotels[:top_k]]}")
+            return diverse_hotels[:top_k]
+        else:
+            # Tek şehir dominant (örn. hepsi İzmir)
+            single_city = list(cities_to_hotels.keys())[0]
+            print(f"[⚠️ SINGLE CITY DOMINANCE] Tüm sonuçlar '{single_city}' şehrinden")
+            return hotels[:top_k]
+    
     def _search_hotels_simple(self, search_query: str, destination_city: str, top_k: int = 3) -> list:
         """
-        SIMPLIFIED Hotel Search: NO FALLBACK, NO FUZZY LOGIC
+        SIMPLIFIED Hotel Search with FLEXIBLE city filtering
         
         Rules:
-        1. Search only in requested city
-        2. If no hotels found, return empty list
+        1. If destination_city is empty or 'bilinmiyor', search ALL cities
+        2. If destination_city is specified, filter by city
         3. Trust vector DB results
         
         Returns: hotels_list (simple list, no fallback info)
@@ -829,18 +1043,22 @@ class TravelPlanner:
         try:
             # Normalize city name
             normalized_city = self._normalize_city_name(destination_city)
+            city_filter_active = normalized_city and normalized_city != 'bilinmiyor'
             
-            # Vector search with STRICT city filter
+            # Vector search
             query_vector = self.embedder.create_embeddings([search_query])[0].tolist()
             
-            # Try WITHOUT where filter first, then filter manually
             query_params = {
                 'query_embeddings': [query_vector],
-                'n_results': top_k * 10,  # Get more to filter manually
+                'n_results': top_k,
                 'include': ['documents', 'metadatas']
             }
             
-            print(f"[SIMPLE SEARCH] Searching in city='{normalized_city}'")
+            if city_filter_active:
+                print(f"[SIMPLE SEARCH] Searching in city='{normalized_city}'")
+            else:
+                print(f"[SIMPLE SEARCH] Searching in ALL cities (no city filter)")
+            
             all_results = self.collection.query(**query_params)
             
             # Debug: Print what cities we got
@@ -848,15 +1066,15 @@ class TravelPlanner:
                 found_cities = [meta.get('city', 'N/A') for meta in all_results['metadatas'][0][:5]]
                 print(f"[DEBUG] Sample cities from DB: {found_cities}")
             
-            # Build hotel list - MANUAL CITY FILTERING
+            # Build hotel list
             matched_hotels = []
             for i in range(len(all_results['ids'][0])):
                 # Get city and normalize it
                 db_city = all_results['metadatas'][0][i].get('city', '')
                 db_city_normalized = self._normalize_city_name(db_city)
                 
-                # Only include if city matches
-                if db_city_normalized != normalized_city:
+                # Apply city filter only if active
+                if city_filter_active and db_city_normalized != normalized_city:
                     continue
                 
                 amenities_data = all_results['metadatas'][0][i].get('amenities', '[]')
@@ -1252,31 +1470,69 @@ class TravelPlanner:
                 ---
                 """
             
-            prompt = f"""
-            Kullanıcı Sorgusu: "{user_query}"
+            # 🎭 Kullanıcı niyetini çıkar (anahtar kelimeler)
+            query_lower = user_query.lower()
+            intent_keywords = {
+                "romantik": "Romantik Kaçamak",
+                "kız kıza": "Keyifli Kız Kıza Tatil",
+                "sessiz": "Huzurlu Dinlenme",
+                "sakin": "Sakin Bir Hafta Sonu",
+                "lüks": "Lüks Deneyim",
+                "ekonomik": "Uygun Fiyatlı Tatil",
+                "aile": "Aile Dostu Tatil",
+                "eğlence": "Eğlence Dolu Tatil",
+                "deniz": "Deniz Keyfi",
+                "spa": "Wellness ve Rahatlama"
+            }
             
-            Aşağıdaki {len(packages)} paketi tek seferde değerlendirip, her biri için ayrı bir pazarlama özeti yaz:
+            package_theme = "Özel Seçim"  # Varsayılan
+            for keyword, theme in intent_keywords.items():
+                if keyword in query_lower:
+                    package_theme = theme
+                    break
+            
+            prompt = f"""
+            Sen profesyonel bir Seyahat Danışmanısın. Kullanıcı şöyle bir tatil istedi: "{user_query}"
+            
+            Aşağıdaki {len(packages)} paketi, kullanıcının niyetine odaklanarak hikaye anlatıcı bir üslupla değerlendir:
             
             {packages_text}
             
-            GÖREV:
-            Her paket için AYRI BIR SATIR'da, akıcı pazarlama paragrafı yaz (2-3 cümle, 30-40 kelime).
+            🎯 **SEYAHATTRAFİK DANIŞMANI KURALLARI:**
             
-            ⚠️ **KURALLAR:**
-            1. Her satır bir paket için olmalı
-            2. Sadece Türkçe - yabancı karakter YOK
-            3. Teknik verilerle pazarlama dilini harmanlayın
-            4. Eğer "Varsayılan sabah uçuşu" notu varsa: "Uçuş saati belirtmediğiniz için size en konforlu sabah uçuşunu seçtik" ekleyin
-            5. HALLUCINATION YASAK - sadece verilen bilgiler
-            6. ⛔ HARD-CODED RULE 2: Eğer paket bulunamazsa, ASLA başka şehre yönlendirme yapma ("Şuraya gidin" yasak)
-            7. ⛔ Boş sonuç için SADECE şunu yaz: "İstediğiniz bölgede kriterlerinize uygun konaklama bulunamadı."
+            1️⃣ **NİYET ODAKLI HİKAYE ANLATIMI:**
+               - Kullanıcının anahtar kelimelerine (romantik, kız kıza, sessiz, lüks) odaklan
+               - ÖRNEK (Romantik): "Baş başa, çocuk sesinden uzak, piyano tınıları eşliğinde eşinizle unutulmaz anlar yaşayacağınız bu butik otelde..."
+               - ÖRNEK (Kız Kıza): "Arkadaşlarınızla gülerek geçireceğiniz keyifli bir kaçamak için ideal bu otel, hem havuz başı hem de gece eğlenceleriyle..."
+               - ÖRNEK (Sessiz): "Kalabalıktan uzak, doğayla iç içe, sadece kuş sesleri ve dalga seslerinin eşlik edeceği bu huzur dolu ortamda..."
             
-            **ÇIKTI FORMATİ** (Her satır bir paket):
-            Paket 1 için özet paragrafı...
-            Paket 2 için özet paragrafı...
-            Paket 3 için özet paragrafı...
+            2️⃣ **BİLEŞENLERİ BİR DENEYİM OLARAK BIRLEŞTIR:**
+               - Otel + Uçuş + Transfer = Bir hikaye
+               - ÖRNEK: "...konforlu Business uçuşunuzun ardından, havalimanında sizi karşılayan lüks VIP aracınızla yorulmadan otelinize geçip romantizmin tadını çıkarabilirsiniz."
+               - Varsayılan sabah uçuşu ise: "Güne erken başlamak için sabah uçuşu seçtik, böylece ilk gününüzü tam değerlendirebilirsiniz."
             
-            Sadece özet paragraflarını yaz, başka hiçbir şey yazma.
+            3️⃣ **DIL VE ÜSLUP:**
+               - Soğuk ve teknik ifadeler YOK → Sıcak, davetkar, ikna edici
+               - "Otel X'de konaklama" DEĞİL → "Otel X'in huzurlu bahçesinde kendinize zaman ayırabilirsiniz"
+               - 2-3 cümle, 40-50 kelime, akıcı paragraf
+               - Sadece Türkçe, yabancı karakter YASAK
+            
+            4️⃣ **PAKET BAŞLIKLARI:**
+               - Her paketin başına tema ekle: "✅ Paket 1: {package_theme}"
+               - Temayı kullanıcı niyetinden çıkar (romantik → Romantik Kaçamak, kız kıza → Keyifli Kız Kıza Tatil)
+            
+            5️⃣ **HALLUCINATION YASAK:**
+               - Sadece verilen bilgileri kullan
+               - Olmayan özellik/hizmet ekleme
+            
+            **ÇIKTI FORMATİ:**
+            Her satır bir paket için, başlık + paragraf şeklinde:
+            
+            ✅ Paket 1: [Tema] - [Hikaye tarzı akıcı paragraf]
+            ✅ Paket 2: [Tema] - [Hikaye tarzı akıcı paragraf]
+            ✅ Paket 3: [Tema] - [Hikaye tarzı akıcı paragraf]
+            
+            Sadece bu formatı kullan, başka hiçbir şey yazma.
             """
             
             completion = self.llm.client.chat.completions.create(
